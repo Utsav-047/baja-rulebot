@@ -1,0 +1,64 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat – BAJA RuleBot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <div class="logo-badge">BAJA</div>
+      <span class="logo-text">RuleBot</span>
+    </div>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="upload.html">Upload Rulebook</a></li>
+      <li><a href="chat.html">Chat</a></li>
+    </ul>
+  </nav>
+
+  <!-- CHAT WRAPPER -->
+  <div class="chat-wrapper">
+
+    <!-- ROLE BAR -->
+    <div class="role-bar">
+      <label>Your Role:</label>
+      <select id="roleSelect">
+        <option>Team Member</option>
+        <option>Team Captain</option>
+        <option>Faculty Advisor</option>
+        <option>Finance Manager</option>
+        <option>Department Manager</option>
+      </select>
+      <span class="rulebook-status">📘 Rulebook Loaded</span>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot">
+        Hello! I am BAJA RuleBot. Select your role and ask me
+        anything about the rulebook!
+      </div>
+    </div>
+
+    <!-- INPUT BAR -->
+    <div class="chat-input-bar">
+      <input
+        type="text"
+        id="chatInput"
+        placeholder="Ask about rulebook... e.g. What are roll cage requirements?"
+        onkeydown="handleKey(event)"
+      />
+      <button class="btn-orange" onclick="sendMessage()">Send</button>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

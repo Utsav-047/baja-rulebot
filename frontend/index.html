@@ -1,13 +1,64 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BAJA RuleBot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <div class="logo-badge">BAJA</div>
+      <span class="logo-text">RuleBot</span>
+    </div>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="upload.html">Upload Rulebook</a></li>
+      <li><a href="chat.html">Chat</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <div class="hero">
+    <div class="hero-badge">AI POWERED</div>
+    <h1>BAJA <span>RuleBot</span></h1>
+    <p>
+      Your AI assistant for BAJA SAEINDIA competition rules.
+      Upload any rulebook and get instant answers, checklists,
+      and compliance guidance.
+    </p>
+    <div class="hero-buttons">
+      <button class="btn-orange" onclick="window.location.href='upload.html'">
+        Upload Rulebook
+      </button>
+      <button class="btn-outline" onclick="window.location.href='chat.html'">
+        Start Chatting
+      </button>
+    </div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div class="features">
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <h3>Upload Any Rulebook</h3>
+      <p>Upload any version of BAJA rulebook PDF and the bot adapts instantly.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <h3>Ask in Plain English</h3>
+      <p>No more searching through pages. Just ask your question naturally.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <h3>Get Checklists</h3>
+      <p>Generate compliance checklists for technical inspection, billing, and safety.</p>
+    </div>
+  </div>
+
+</body>
 </html>
