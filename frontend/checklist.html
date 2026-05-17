@@ -1,0 +1,103 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist – BAJA RuleBot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <div class="logo-badge">BAJA</div>
+      <span class="logo-text">RuleBot</span>
+    </div>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="upload.html">Upload Rulebook</a></li>
+      <li><a href="chat.html">Chat</a></li>
+      <li><a href="checklist.html">Checklist</a></li>
+    </ul>
+  </nav>
+
+  <!-- CHECKLIST SECTION -->
+  <div class="upload-container">
+    <h2>Generate <span>Checklist</span></h2>
+    <p>Select a category to generate compliance checklist from rulebook</p>
+
+    <!-- Category Selector -->
+    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:30px;">
+      <button class="btn-orange" onclick="generateChecklist('technical inspection')">
+        🔧 Technical Inspection
+      </button>
+      <button class="btn-orange" onclick="generateChecklist('billing and documents')">
+        📄 Billing & Documents
+      </button>
+      <button class="btn-orange" onclick="generateChecklist('driver safety equipment')">
+        🪖 Driver Safety
+      </button>
+      <button class="btn-orange" onclick="generateChecklist('static events')">
+        🏆 Static Events
+      </button>
+      <button class="btn-orange" onclick="generateChecklist('electrical safety')">
+        ⚡ Electrical Safety
+      </button>
+    </div>
+
+    <!-- Checklist Output -->
+    <div class="upload-box" style="width:100%; max-width:800px; text-align:left;">
+      <div id="checklistOutput">
+        <p style="color:#9ca3af; text-align:center;">
+          Click a category above to generate checklist
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = "http://127.0.0.1:8000"
+
+    function generateChecklist(category) {
+      const output = document.getElementById('checklistOutput')
+      output.innerHTML = '<p style="color:#f97316; text-align:center;">⏳ Generating checklist...</p>'
+
+      fetch(`${BACKEND_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: `Generate a detailed compliance checklist for ${category} based on the rulebook. Format it as a numbered list of items to check.`,
+          role: 'Team Member'
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const answer = data.answer || data.error
+        const items = answer.split('\n').filter(line => line.trim())
+
+        let html = `<h3 style="color:#f97316; margin-bottom:16px;">
+                    ✅ ${category.toUpperCase()} CHECKLIST</h3>`
+
+        items.forEach(item => {
+          if (item.trim()) {
+            html += `
+              <div style="display:flex; align-items:flex-start; gap:12px;
+                          padding:12px; margin-bottom:8px;
+                          background:#111827; border-radius:8px;">
+                <input type="checkbox" style="margin-top:4px; accent-color:#f97316;">
+                <span style="color:#e5e7eb; font-size:14px;">${item}</span>
+              </div>`
+          }
+        })
+
+        output.innerHTML = html
+      })
+      .catch(err => {
+        output.innerHTML = '<p style="color:red;">Error! Please upload rulebook first!</p>'
+      })
+    }
+  </script>
+
+</body>
+</html>

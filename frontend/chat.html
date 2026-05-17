@@ -18,6 +18,7 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="upload.html">Upload Rulebook</a></li>
       <li><a href="chat.html">Chat</a></li>
+      <li><a href="checklist.html">Checklist</a></li>
     </ul>
   </nav>
 
@@ -34,6 +35,7 @@
         <option>Finance Manager</option>
         <option>Department Manager</option>
       </select>
+      <span id="userInfo" style="color:#9ca3af; font-size:14px;"></span>
       <span class="rulebook-status">📘 Rulebook Loaded</span>
     </div>
 
@@ -57,7 +59,25 @@
     </div>
 
   </div>
+<script>
+  // Load user info from login
+  window.onload = function() {
+    const name = localStorage.getItem('userName') || 'Guest'
+    const team = localStorage.getItem('teamName') || 'Unknown Team'
+    const role = localStorage.getItem('userRole') || 'Team Member'
 
+    document.getElementById('userInfo').textContent = `👤 ${name} | 🏁 ${team}`
+
+    // Set role in dropdown
+    const roleSelect = document.getElementById('roleSelect')
+    for (let i = 0; i < roleSelect.options.length; i++) {
+      if (roleSelect.options[i].value === role) {
+        roleSelect.selectedIndex = i
+        break
+      }
+    }
+  }
+</script>
   <script src="script.js"></script>
 
 </body>

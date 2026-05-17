@@ -320,3 +320,104 @@ body {
 .chat-input-bar input::placeholder {
   color: #6b7280;
 }
+/* CHECKLIST */
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #111827;
+  border-radius: 8px;
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Apply animations */
+.hero {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.hero-badge {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.card {
+  animation: fadeInUp 0.8s ease forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(249, 115, 22, 0.2);
+}
+
+.navbar {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.upload-box {
+  animation: fadeInUp 0.8s ease forwards;
+  transition: transform 0.3s ease;
+}
+
+.btn-orange {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-orange:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+}
+
+.btn-outline:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+}
+
+.message {
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+.navbar-links a {
+  position: relative;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #f97316;
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+/* Glowing effect on logo */
+.logo-badge {
+  transition: box-shadow 0.3s ease;
+}
+
+.logo-badge:hover {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.6);
+}

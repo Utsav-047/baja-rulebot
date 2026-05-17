@@ -1,4 +1,6 @@
- function sendMessage() {
+const BACKEND_URL = "http://127.0.0.1:8000"
+
+function sendMessage() {
   const input = document.getElementById('chatInput')
   const messages = document.getElementById('chatMessages')
   const role = document.getElementById('roleSelect').value
@@ -12,24 +14,41 @@
   userMsg.textContent = text
   messages.appendChild(userMsg)
 
-  // Clear input
   input.value = ''
-
-  // Scroll to bottom
   messages.scrollTop = messages.scrollHeight
 
-  // Add bot reply
-  setTimeout(() => {
+  // Show loading
+  const loadingMsg = document.createElement('div')
+  loadingMsg.classList.add('message', 'bot')
+  loadingMsg.textContent = 'Thinking...'
+  loadingMsg.id = 'loading'
+  messages.appendChild(loadingMsg)
+
+  // Call backend
+  fetch(`${BACKEND_URL}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: text, role: role })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('loading').remove()
     const botMsg = document.createElement('div')
     botMsg.classList.add('message', 'bot')
-    botMsg.textContent = `As a ${role}, here is what the rulebook says about "${text}": [AI response will appear here once backend is connected by Renish]`
+    botMsg.textContent = data.answer || data.error
     messages.appendChild(botMsg)
     messages.scrollTop = messages.scrollHeight
-  }, 1000)
+  })
+  .catch(err => {
+    document.getElementById('loading').remove()
+    const botMsg = document.createElement('div')
+    botMsg.classList.add('message', 'bot')
+    botMsg.textContent = 'Error connecting to server. Please try again!'
+    messages.appendChild(botMsg)
+    messages.scrollTop = messages.scrollHeight
+  })
 }
 
 function handleKey(event) {
-  if (event.key === 'Enter') {
-    sendMessage()
-  }
+  if (event.key === 'Enter') sendMessage()
 }

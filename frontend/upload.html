@@ -18,6 +18,7 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="upload.html">Upload Rulebook</a></li>
       <li><a href="chat.html">Chat</a></li>
+      <li><a href="checklist.html">Checklist</a></li>
     </ul>
   </nav>
 
@@ -67,25 +68,44 @@
   </div>
 
   <script>
-    function handleFile() {
-      const file = document.getElementById('fileInput').files[0]
-      if (file) {
-        document.getElementById('fileLabel').textContent = file.name
-        document.getElementById('uploadBtn').style.display = 'block'
-      }
-    }
+    const BACKEND_URL = "http://127.0.0.1:8000"
 
-    function handleUpload() {
-      const btn = document.getElementById('uploadBtn')
-      btn.textContent = 'Uploading...'
-      btn.disabled = true
+function handleFile() {
+  const file = document.getElementById('fileInput').files[0]
+  if (file) {
+    document.getElementById('fileLabel').textContent = file.name
+    document.getElementById('uploadBtn').style.display = 'block'
+  }
+}
 
-      setTimeout(() => {
-        document.getElementById('successMsg').style.display = 'block'
-        document.getElementById('uploadBtn').style.display = 'none'
-        document.getElementById('chatBtn').style.display = 'block'
-      }, 2000)
-    }
+function handleUpload() {
+  const file = document.getElementById('fileInput').files[0]
+  if (!file) return
+
+  const btn = document.getElementById('uploadBtn')
+  btn.textContent = 'Uploading...'
+  btn.disabled = true
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  fetch(`${BACKEND_URL}/upload`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('successMsg').style.display = 'block'
+    document.getElementById('successMsg').textContent = 
+      `✅ Rulebook Uploaded! ${data.words_extracted} words extracted!`
+    document.getElementById('uploadBtn').style.display = 'none'
+    document.getElementById('chatBtn').style.display = 'block'
+  })
+  .catch(err => {
+    btn.textContent = 'Upload Failed! Try Again'
+    btn.disabled = false
+  })
+}
   </script>
 
 </body>
