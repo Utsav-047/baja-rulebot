@@ -1,84 +1,513 @@
- <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="light" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat – BAJA RuleBot</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chat – BAJA RuleBot</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .chat-scroll::-webkit-scrollbar { width:4px; }
+  .chat-scroll::-webkit-scrollbar-track { background:transparent; }
+  .chat-scroll::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:10px; }
+  .technical-border { border:1px solid rgba(30,41,59,0.1); }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .msg-anim { animation: fadeInUp 0.3s ease forwards; }
+  .typing-dot { animation: blink 1.4s infinite; }
+  .typing-dot:nth-child(2) { animation-delay:0.2s; }
+  .typing-dot:nth-child(3) { animation-delay:0.4s; }
+  @keyframes blink { 0%,80%,100% { opacity:0; } 40% { opacity:1; } }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface-variant":"#424752","primary-container":"#0058ae","primary":"#004183",
+          "surface-bright":"#f8f9ff","on-primary":"#ffffff","secondary-container":"#476ae9",
+          "surface-container-highest":"#d3e4fe","surface":"#f8f9ff","surface-container-lowest":"#ffffff",
+          "surface-container":"#e5eeff","error":"#ba1a1a","cad-gray":"#F1F5F9",
+          "engineering-blue-light":"#EAEEFB","racing-yellow":"#FFD600","safety-orange":"#F57C00",
+          "metallic-slate":"#1E293B","on-background":"#0b1c30","on-surface":"#0b1c30",
+          "surface-container-low":"#eff4ff","outline-variant":"#c2c6d4","secondary":"#2850cf",
+          "inverse-surface":"#213145","background":"#f8f9ff","on-secondary":"#ffffff",
+          "surface-dim":"#cbdbf5","surface-container-high":"#dce9ff","outline":"#727783"
+        },
+        borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+        spacing:{"margin-desktop":"48px","gutter":"24px","margin-mobile":"16px","base":"8px"},
+        fontFamily:{
+          "code-snippet":["JetBrains Mono"],"body-lg":["Inter"],"label-caps":["JetBrains Mono"],
+          "headline-md":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],
+          "body-sm":["Inter"],"body-md":["Inter"],"headline-lg":["Hanken Grotesk"]
+        },
+        fontSize:{
+          "code-snippet":["13px",{"lineHeight":"20px","fontWeight":"400"}],
+          "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+          "label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],
+          "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+          "headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"800"}],
+          "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+          "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+          "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}]
+        }
+      }
+    }
+  }
+</script>
 </head>
-<body>
+<body class="bg-cad-gray text-on-surface font-body-md overflow-hidden">
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="navbar-logo">
-      <div class="logo-badge">BAJA</div>
-      <span class="logo-text">RuleBot</span>
+<!-- TOP NAVBAR -->
+<header class="fixed top-0 right-0 left-0 z-50 bg-surface border-b border-metallic-slate/10 w-full h-16 flex justify-between items-center px-margin-desktop">
+  <div class="flex items-center gap-4">
+    <h1 class="font-headline-md text-headline-md font-bold text-primary">BAJA RuleBot</h1>
+  </div>
+  <div class="flex items-center gap-base">
+    <div class="relative hidden md:flex items-center">
+      <span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[20px]">search</span>
+      <input class="bg-engineering-blue-light border-none focus:ring-0 pl-10 pr-4 py-2 w-64 font-body-sm transition-all rounded-lg" placeholder="Search rules..." type="text"/>
     </div>
-    <ul class="navbar-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="upload.html">Upload Rulebook</a></li>
-      <li><a href="chat.html">Chat</a></li>
-      <li><a href="checklist.html">Checklist</a></li>
-    </ul>
-  </nav>
+    <div class="cursor-pointer hover:bg-engineering-blue-light transition-colors p-2 rounded-full">
+      <span class="material-symbols-outlined text-primary text-[28px]">account_circle</span>
+    </div>
+  </div>
+</header>
 
-  <!-- CHAT WRAPPER -->
-  <div class="chat-wrapper">
+<!-- SIDEBAR -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-cad-gray border-r border-metallic-slate/10 flex flex-col p-base gap-gutter z-40 hidden md:flex">
+  <div class="flex flex-col gap-2 mt-20">
+    <div class="flex items-center gap-3 px-3 py-4">
+      <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm">
+        <span class="material-symbols-outlined">precision_manufacturing</span>
+      </div>
+      <div>
+        <div class="font-headline-md text-[18px] font-black text-primary leading-tight">BAJA RuleBot</div>
+        <div class="font-label-caps text-[10px] text-on-surface-variant opacity-70">Technical Assistant</div>
+      </div>
+    </div>
 
-    <!-- ROLE BAR -->
-    <div class="role-bar">
-      <label>Your Role:</label>
-      <select id="roleSelect">
+    <button onclick="clearChat()" class="bg-primary text-on-primary rounded-xl font-bold py-3 px-4 flex items-center gap-3 mb-4 hover:opacity-90 transition-all mx-2 shadow-lg shadow-primary/20">
+      <span class="material-symbols-outlined">add_circle</span>
+      <span class="font-label-caps">New Rule Check</span>
+    </button>
+
+    <nav class="flex flex-col gap-2">
+      <a class="bg-primary text-on-primary rounded-xl font-bold transition-all px-4 py-3 flex items-center gap-3" href="chat.html">
+        <span class="material-symbols-outlined">chat</span>
+        <span class="font-label-caps uppercase">Chat</span>
+      </a>
+      <a class="text-on-surface-variant font-medium hover:text-primary hover:bg-engineering-blue-light transition-all px-4 py-3 rounded-xl flex items-center gap-3" href="history.html">
+        <span class="material-symbols-outlined">history</span>
+        <span class="font-label-caps uppercase">History</span>
+      </a>
+      <a class="text-on-surface-variant font-medium hover:text-primary hover:bg-engineering-blue-light transition-all px-4 py-3 rounded-xl flex items-center gap-3" href="checklist.html">
+        <span class="material-symbols-outlined">checklist</span>
+        <span class="font-label-caps uppercase">Checklist</span>
+      </a>
+      <a class="text-on-surface-variant font-medium hover:text-primary hover:bg-engineering-blue-light transition-all px-4 py-3 rounded-xl flex items-center gap-3" href="upload.html">
+        <span class="material-symbols-outlined">upload_file</span>
+        <span class="font-label-caps uppercase">Upload</span>
+      </a>
+      <a class="text-on-surface-variant font-medium hover:text-primary hover:bg-engineering-blue-light transition-all px-4 py-3 rounded-xl flex items-center gap-3" href="admin.html">
+        <span class="material-symbols-outlined">settings_applications</span>
+        <span class="font-label-caps uppercase">Admin</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="mt-auto flex flex-col gap-2 pb-6">
+    <a class="text-on-surface-variant font-medium hover:text-primary hover:bg-engineering-blue-light transition-all px-4 py-2 rounded-xl flex items-center gap-3" href="index.html">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-caps uppercase">Home</span>
+    </a>
+    <a onclick="logout()" class="text-on-surface-variant font-medium hover:text-error hover:bg-red-50 transition-all px-4 py-2 rounded-xl flex items-center gap-3 cursor-pointer">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="font-label-caps uppercase">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="ml-64 pt-16 h-screen flex flex-col bg-surface relative">
+
+  <!-- SESSION HEADER -->
+  <div class="w-full h-16 border-b border-metallic-slate/10 flex justify-between items-center px-margin-desktop bg-surface z-40">
+    <div class="flex items-center gap-6">
+      <div class="flex flex-col">
+        <h2 class="font-headline-md text-[18px] font-bold text-metallic-slate">BAJA Rulebook Assistant</h2>
+        <div class="flex items-center gap-4 mt-1">
+          <div class="flex items-center gap-1.5 px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
+            <span class="text-[10px] font-label-caps font-bold">LIVE ASSISTANT</span>
+          </div>
+          <div class="flex items-center gap-2 text-on-surface-variant/70">
+            <span class="material-symbols-outlined text-sm">person</span>
+            <span class="text-[11px] font-label-caps" id="userRoleTag">Role: Team Member</span>
+          </div>
+          <div class="flex items-center gap-2 text-on-surface-variant/70">
+            <span class="material-symbols-outlined text-sm">group</span>
+            <span class="text-[11px] font-label-caps" id="userTeamTag">Team: —</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <select id="roleSelect" onchange="updateRole()" class="text-[11px] font-label-caps px-3 py-1.5 bg-cad-gray border border-metallic-slate/10 rounded-lg text-on-surface-variant focus:ring-0 focus:border-primary cursor-pointer">
         <option>Team Member</option>
         <option>Team Captain</option>
         <option>Faculty Advisor</option>
         <option>Finance Manager</option>
         <option>Department Manager</option>
       </select>
-      <span id="userInfo" style="color:#9ca3af; font-size:14px;"></span>
-      <span class="rulebook-status">📘 Rulebook Loaded</span>
     </div>
+  </div>
 
-    <!-- MESSAGES -->
-    <div class="chat-messages" id="chatMessages">
-      <div class="message bot">
-        Hello! I am BAJA RuleBot. Select your role and ask me
-        anything about the rulebook!
+  <!-- CHAT + RIGHT RAIL -->
+  <div class="flex-1 overflow-hidden flex">
+
+    <!-- CHAT AREA -->
+    <section class="flex-1 flex flex-col relative">
+      <div class="flex-1 overflow-y-auto chat-scroll px-margin-desktop py-8 flex flex-col gap-6" id="chatHistory">
+
+        <!-- WELCOME MESSAGE -->
+        <div class="flex justify-center mb-4">
+          <span class="text-[10px] font-label-caps text-on-surface-variant bg-cad-gray px-4 py-1 rounded-full border border-metallic-slate/5">BAJA RuleBot — Ask anything about the rulebook</span>
+        </div>
+
+        <!-- BOT INTRO -->
+        <div class="flex flex-col items-start gap-1 max-w-[85%] self-start msg-anim">
+          <div class="flex gap-3">
+            <div class="w-8 h-8 rounded-lg bg-cad-gray flex items-center justify-center flex-shrink-0 border border-metallic-slate/10">
+              <span class="material-symbols-outlined text-primary scale-75">smart_toy</span>
+            </div>
+            <div class="bg-white text-on-background px-5 py-4 rounded-2xl rounded-tl-none border border-metallic-slate/10 shadow-sm">
+              <p class="font-body-md leading-relaxed">👋 Hello! I am <strong>BAJA RuleBot</strong>. Upload a rulebook PDF and ask me anything about technical rules, compliance requirements, or inspection criteria!</p>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
 
-    <!-- INPUT BAR -->
-    <div class="chat-input-bar">
-      <input
-        type="text"
-        id="chatInput"
-        placeholder="Ask about rulebook... e.g. What are roll cage requirements?"
-        onkeydown="handleKey(event)"
-      />
-      <button class="btn-orange" onclick="sendMessage()">Send</button>
-    </div>
+      <!-- INPUT BAR -->
+      <div class="w-full bg-surface-container-low border-t border-metallic-slate/10 px-margin-desktop py-6">
+        <div class="max-w-4xl mx-auto flex items-end gap-3 bg-white p-2 rounded-xl border border-metallic-slate/10 shadow-lg">
+          <div class="flex-1 flex flex-col gap-1 px-3 py-1">
+            <textarea
+              id="chatInput"
+              class="w-full border-none focus:ring-0 resize-none font-body-md bg-transparent placeholder:text-on-surface-variant/50"
+              placeholder="Ask about roll cage specs, powertrain rules, safety regs..."
+              rows="1"
+              style="min-height:40px;"
+              onkeydown="handleKey(event)"
+            ></textarea>
+          </div>
+          <div class="flex items-center gap-2 pb-1 pr-1">
+            <button onclick="sendMessage()" class="bg-primary text-on-primary p-3 rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center shadow-md shadow-primary/10">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </div>
+        <!-- STATUS BADGES -->
+        <div class="mt-4 flex justify-center gap-4 flex-wrap">
+          <div class="flex items-center gap-2 text-[11px] font-label-caps text-on-surface-variant/70 px-3 py-1 bg-white rounded-full border border-metallic-slate/10">
+            <span class="material-symbols-outlined text-xs text-primary">verified</span>
+            <span id="rulebookStatus">No Rulebook Loaded</span>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] font-label-caps text-on-surface-variant/70 px-3 py-1 bg-white rounded-full border border-metallic-slate/10">
+            <span class="material-symbols-outlined text-xs text-primary">bolt</span>
+            AI Engine: Groq LLaMA 3.3-70B
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT RAIL -->
+    <aside class="w-72 bg-white border-l border-metallic-slate/10 hidden xl:flex flex-col p-6 overflow-y-auto chat-scroll">
+      <h3 class="font-label-caps text-label-caps text-primary mb-6 border-b border-metallic-slate/10 pb-2">QUICK ACTIONS</h3>
+      <div class="flex flex-col gap-4">
+        <div>
+          <p class="text-[10px] font-label-caps text-on-surface-variant mb-3">COMMON QUERIES</p>
+          <div class="flex flex-col gap-2">
+            <button onclick="quickAsk('What are the roll cage material requirements?')" class="text-left text-xs px-3 py-2 bg-engineering-blue-light border border-primary/10 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-colors text-on-surface-variant font-medium">
+              🔧 Roll cage material requirements
+            </button>
+            <button onclick="quickAsk('What are the driver safety equipment requirements?')" class="text-left text-xs px-3 py-2 bg-engineering-blue-light border border-primary/10 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-colors text-on-surface-variant font-medium">
+              🪖 Driver safety equipment
+            </button>
+            <button onclick="quickAsk('What are the engine and powertrain rules?')" class="text-left text-xs px-3 py-2 bg-engineering-blue-light border border-primary/10 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-colors text-on-surface-variant font-medium">
+              ⚙️ Engine & powertrain rules
+            </button>
+            <button onclick="quickAsk('What documents are required for billing and registration?')" class="text-left text-xs px-3 py-2 bg-engineering-blue-light border border-primary/10 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-colors text-on-surface-variant font-medium">
+              📄 Billing & documents
+            </button>
+            <button onclick="quickAsk('What are the brake system requirements?')" class="text-left text-xs px-3 py-2 bg-engineering-blue-light border border-primary/10 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-colors text-on-surface-variant font-medium">
+              🛑 Brake system requirements
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4 bg-engineering-blue-light rounded-lg border border-primary/10">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-sm">tips_and_updates</span>
+            <span class="font-label-caps text-[10px] text-primary">TECH TIP</span>
+          </div>
+          <p class="text-xs font-medium italic text-on-surface-variant">"Upload the latest BAJA 2026 rulebook PDF for most accurate answers."</p>
+        </div>
+
+        <div onclick="window.location.href='upload.html'" class="p-4 bg-cad-gray rounded-lg border border-metallic-slate/10 hover:border-primary/30 transition-colors cursor-pointer">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-sm">upload_file</span>
+            <span class="font-label-caps text-[10px] text-primary">UPLOAD</span>
+          </div>
+          <h4 class="text-sm font-bold text-metallic-slate">Upload New Rulebook</h4>
+          <p class="text-xs text-on-surface-variant mt-1">Click to upload a new PDF rulebook version.</p>
+        </div>
+
+        <div onclick="window.location.href='checklist.html'" class="p-4 bg-cad-gray rounded-lg border border-metallic-slate/10 hover:border-primary/30 transition-colors cursor-pointer">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-sm">checklist</span>
+            <span class="font-label-caps text-[10px] text-primary">CHECKLIST</span>
+          </div>
+          <h4 class="text-sm font-bold text-metallic-slate">Generate Checklist</h4>
+          <p class="text-xs text-on-surface-variant mt-1">Auto-generate compliance checklist for inspection.</p>
+        </div>
+      </div>
+
+      <div class="mt-auto pt-6">
+        <button onclick="exportChat()" class="w-full py-3 bg-metallic-slate text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-lg">
+          <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+          Export Chat Log
+        </button>
+      </div>
+    </aside>
 
   </div>
+</main>
+
 <script>
-  // Load user info from login
+  const BACKEND_URL = "http://127.0.0.1:8000"
+  let currentUserId = 0
+  let messageCount = 0
+
   window.onload = function() {
     const name = localStorage.getItem('userName') || 'Guest'
-    const team = localStorage.getItem('teamName') || 'Unknown Team'
+    const team = localStorage.getItem('teamName') || '—'
     const role = localStorage.getItem('userRole') || 'Team Member'
+    currentUserId = parseInt(localStorage.getItem('user_id')) || 0
 
-    document.getElementById('userInfo').textContent = `👤 ${name} | 🏁 ${team}`
+    document.getElementById('userRoleTag').textContent = `Role: ${role}`
+    document.getElementById('userTeamTag').textContent = `Team: ${team}`
 
-    // Set role in dropdown
-    const roleSelect = document.getElementById('roleSelect')
-    for (let i = 0; i < roleSelect.options.length; i++) {
-      if (roleSelect.options[i].value === role) {
-        roleSelect.selectedIndex = i
-        break
-      }
+    const sel = document.getElementById('roleSelect')
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === role) { sel.selectedIndex = i; break; }
+    }
+
+    document.getElementById('rulebookStatus').textContent = 'BAJA 2026 Rulebook — Ready'
+
+    // ✅ RESUME CHAT - Load previous Q&A if coming from history page
+    const resumeQ = localStorage.getItem('resumeQuestion')
+    const resumeA = localStorage.getItem('resumeAnswer')
+
+    if (resumeQ && resumeA) {
+      // Show resumed session banner
+      const banner = document.createElement('div')
+      banner.className = 'flex justify-center mb-2'
+      banner.innerHTML = `<span class="text-[10px] font-label-caps text-primary bg-engineering-blue-light px-4 py-1 rounded-full border border-primary/10">📂 Resumed from history</span>`
+      document.getElementById('chatHistory').appendChild(banner)
+
+      // Show previous question
+      addUserMessage(resumeQ)
+
+      // Show previous answer
+      addBotMessage(resumeA, 0)
+
+      // Clear so it doesn't keep reloading
+      localStorage.removeItem('resumeQuestion')
+      localStorage.removeItem('resumeAnswer')
     }
   }
-</script>
-  <script src="script.js"></script>
 
+  function updateRole() {
+    const role = document.getElementById('roleSelect').value
+    document.getElementById('userRoleTag').textContent = `Role: ${role}`
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chatInput')
+    const text = input.value.trim()
+    if (!text) return
+    input.value = ''
+    input.style.height = '40px'
+    addUserMessage(text)
+    showTyping()
+    callBackend(text)
+  }
+
+  function quickAsk(question) {
+    document.getElementById('chatInput').value = question
+    sendMessage()
+  }
+
+  function addUserMessage(text) {
+    messageCount++
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    const div = document.createElement('div')
+    div.className = 'flex flex-col items-end gap-1 max-w-[80%] self-end msg-anim'
+    div.innerHTML = `
+      <div class="bg-primary text-white px-5 py-3 rounded-2xl rounded-tr-none shadow-sm">
+        <p class="font-body-md">${escapeHtml(text)}</p>
+      </div>
+      <span class="text-[10px] font-label-caps text-on-surface-variant px-2">${now}</span>`
+    document.getElementById('chatHistory').appendChild(div)
+    scrollToBottom()
+  }
+
+  function showTyping() {
+    const div = document.createElement('div')
+    div.id = 'typingIndicator'
+    div.className = 'flex flex-col items-start gap-1 max-w-[85%] self-start msg-anim'
+    div.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-cad-gray flex items-center justify-center flex-shrink-0 border border-metallic-slate/10">
+          <span class="material-symbols-outlined text-primary scale-75">smart_toy</span>
+        </div>
+        <div class="bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-metallic-slate/10 shadow-sm flex items-center gap-1.5">
+          <span class="typing-dot w-2 h-2 bg-primary/40 rounded-full inline-block"></span>
+          <span class="typing-dot w-2 h-2 bg-primary/40 rounded-full inline-block"></span>
+          <span class="typing-dot w-2 h-2 bg-primary/40 rounded-full inline-block"></span>
+        </div>
+      </div>`
+    document.getElementById('chatHistory').appendChild(div)
+    scrollToBottom()
+  }
+
+  function addBotMessage(text, chatId) {
+    const typing = document.getElementById('typingIndicator')
+    if (typing) typing.remove()
+
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    const div = document.createElement('div')
+    div.className = 'flex flex-col items-start gap-1 max-w-[85%] self-start msg-anim'
+
+    const feedbackHtml = chatId > 0 ? `
+      <div class="flex items-center border-l border-metallic-slate/10 pl-2 ml-1 gap-1" id="fb-${chatId}">
+        <button onclick="sendFeedback(${chatId},'up',this)" class="p-1 hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">thumb_up</span>
+        </button>
+        <button onclick="sendFeedback(${chatId},'down',this)" class="p-1 hover:text-error transition-colors">
+          <span class="material-symbols-outlined text-sm text-on-surface-variant">thumb_down</span>
+        </button>
+      </div>` : ''
+
+    div.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-cad-gray flex items-center justify-center flex-shrink-0 border border-metallic-slate/10">
+          <span class="material-symbols-outlined text-primary scale-75">smart_toy</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="bg-white text-on-background px-5 py-4 rounded-2xl rounded-tl-none border border-metallic-slate/10 shadow-sm">
+            <p class="font-body-md leading-relaxed">${formatAnswer(text)}</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            ${feedbackHtml}
+          </div>
+        </div>
+      </div>
+      <span class="text-[10px] font-label-caps text-on-surface-variant px-12">${now}</span>`
+    document.getElementById('chatHistory').appendChild(div)
+    scrollToBottom()
+  }
+
+  function callBackend(question) {
+    const role = document.getElementById('roleSelect').value
+    fetch(`${BACKEND_URL}/chat`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question, role, user_id: currentUserId })
+    })
+    .then(r => r.json())
+    .then(data => { addBotMessage(data.answer || data.error, data.chat_id || 0) })
+    .catch(() => { addBotMessage('Error connecting to server. Please check if backend is running.', 0) })
+  }
+
+  function sendFeedback(chatId, feedback, btn) {
+    fetch(`${BACKEND_URL}/feedback`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: chatId, feedback })
+    }).then(() => {
+      const fbDiv = document.getElementById(`fb-${chatId}`)
+      if (fbDiv) {
+        fbDiv.innerHTML = feedback === 'up'
+          ? '<span class="text-[11px] font-label-caps text-green-600 px-2">Helpful</span>'
+          : '<span class="text-[11px] font-label-caps text-red-500 px-2">Thanks for feedback</span>'
+      }
+    })
+  }
+
+  function formatAnswer(text) {
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary">$1</strong>')
+    text = text.replace(/(\d+)\.\s+/g, '<br><br><span class="text-primary font-bold">$1.</span> ')
+    text = text.replace(/\n/g, '<br>')
+    text = text.replace(/^(<br>)+/, '')
+    return text
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  }
+
+  function scrollToBottom() {
+    const chat = document.getElementById('chatHistory')
+    chat.scrollTop = chat.scrollHeight
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  function clearChat() {
+    const chat = document.getElementById('chatHistory')
+    chat.innerHTML = `
+      <div class="flex justify-center mb-4">
+        <span class="text-[10px] font-label-caps text-on-surface-variant bg-cad-gray px-4 py-1 rounded-full border border-metallic-slate/5">New session started</span>
+      </div>
+      <div class="flex flex-col items-start gap-1 max-w-[85%] self-start msg-anim">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-lg bg-cad-gray flex items-center justify-center flex-shrink-0 border border-metallic-slate/10">
+            <span class="material-symbols-outlined text-primary scale-75">smart_toy</span>
+          </div>
+          <div class="bg-white text-on-background px-5 py-4 rounded-2xl rounded-tl-none border border-metallic-slate/10 shadow-sm">
+            <p class="font-body-md leading-relaxed">New session started! Ask me anything about the BAJA rulebook.</p>
+          </div>
+        </div>
+      </div>`
+  }
+
+  function exportChat() {
+    const messages = document.getElementById('chatHistory').innerText
+    const blob = new Blob([messages], {type:'text/plain'})
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'baja-chat-log.txt'
+    a.click()
+  }
+
+  function logout() {
+    localStorage.clear()
+    window.location.href = 'login.html'
+  }
+
+  const tx = document.getElementById('chatInput')
+  if (tx) {
+    tx.addEventListener('input', function() {
+      this.style.height = '40px'
+      this.style.height = this.scrollHeight + 'px'
+    })
+  }
+</script>
 </body>
 </html>
