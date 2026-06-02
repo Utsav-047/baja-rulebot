@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>BAJA RuleBot - Query History</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "outline-variant": "#c2c6d4", "on-surface": "#0b1c30",
+            "surface-container-low": "#eff4ff", "surface-container-high": "#dce9ff",
+            "on-surface-variant": "#424752", "engineering-blue-light": "#EAEEFB",
+            "on-primary": "#ffffff", "metallic-slate": "#1E293B",
+            "safety-orange": "#F57C00", "surface-container": "#e5eeff",
+            "surface": "#f8f9ff", "primary": "#004183",
+            "primary-container": "#0058ae", "surface-container-highest": "#d3e4fe",
+            "racing-yellow": "#FFD600", "secondary": "#2850cf", "cad-gray": "#F1F5F9",
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .sidebar-active { background-color: #004183 !important; color: white !important; font-weight: 700; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.4s ease forwards; }
+  </style>
+</head>
+<body class="bg-surface-container-low text-on-surface">
+
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-outline-variant flex flex-col z-50">
+  <div class="px-6 py-6 flex items-center gap-3">
+    <div class="bg-orange-500 text-white font-black px-3 py-1 rounded-lg text-sm">BAJA</div>
+    <h1 class="font-bold text-primary text-xl">RuleBot</h1>
+  </div>
+  <div class="px-4 mb-4">
+    <div class="bg-surface-container-low rounded-xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm" id="userAvatar">U</div>
+      <div class="overflow-hidden">
+        <p class="text-xs text-on-surface-variant uppercase tracking-wider font-bold truncate" id="sidebarTeam">Team</p>
+        <p class="text-sm font-semibold text-primary truncate" id="sidebarName">User</p>
+      </div>
+    </div>
+  </div>
+  <a href="chat.html" class="mx-4 mb-6 bg-primary text-white rounded-xl font-bold py-3 px-4 flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-md">
+    <span class="material-symbols-outlined text-[20px]">add</span>
+    <span class="text-xs font-bold uppercase tracking-wide">New Rule Check</span>
+  </a>
+  <nav class="flex-1 px-4 flex flex-col gap-1">
+    <a href="upload.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">upload_file</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Upload</span>
+    </a>
+    <a href="chat.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">chat_bubble</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Chat</span>
+    </a>
+    <a href="checklist.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">checklist</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Checklist</span>
+    </a>
+    <a href="history.html" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+      <span class="material-symbols-outlined">history</span>
+      <span class="text-xs font-bold uppercase tracking-wide">History</span>
+    </a>
+    <a href="admin.html" id="adminLink" style="display:none;" class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">settings_applications</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Admin</span>
+    </a>
+  </nav>
+  <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
+    <a href="index.html" class="flex items-center gap-3 px-4 py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors">
+      <span class="material-symbols-outlined text-[20px]">home</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Home</span>
+    </a>
+    <button onclick="logout()" class="flex items-center gap-3 px-4 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors w-full">
+      <span class="material-symbols-outlined text-[20px]">logout</span>
+      <span class="text-xs font-bold uppercase tracking-wide">Logout</span>
+    </button>
+  </div>
+</aside>
+
+<!-- HEADER -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white border-b border-outline-variant px-8 flex items-center justify-between z-40 shadow-sm">
+  <div class="flex items-center gap-4 flex-1 max-w-xl">
+    <div class="relative w-full">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+      <input id="searchInput"
+        class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none"
+        placeholder="Search history records..."
+        type="text"
+        oninput="filterHistory()"/>
+    </div>
+  </div>
+  <div class="flex items-center gap-3 ml-4">
+    <div class="text-right hidden md:block">
+      <p class="text-sm font-semibold text-on-surface" id="headerName">User</p>
+      <p class="text-xs text-on-surface-variant" id="headerRole">Role</p>
+    </div>
+    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm" id="headerAvatar">U</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="ml-64 mt-16 p-8 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div>
+        <h2 class="text-3xl font-black text-primary mb-1">My Query History</h2>
+        <p class="text-on-surface-variant text-sm">Review technical inquiries and regulatory compliance checks.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="exportHistory()" class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg bg-white text-on-surface hover:bg-surface-container-low transition-colors text-xs font-bold uppercase">
+          <span class="material-symbols-outlined text-[18px]">file_download</span>
+          Export Log
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+      <!-- HISTORY FEED -->
+      <div class="col-span-12 lg:col-span-8">
+        <div id="historyContainer">
+          <div class="text-center py-20 text-on-surface-variant">Loading history...</div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+        <div class="bg-metallic-slate rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+          <div class="relative z-10">
+            <h4 class="text-racing-yellow text-xs tracking-widest mb-6 flex items-center gap-2 font-bold uppercase">
+              <span class="material-symbols-outlined text-[16px]">monitoring</span>
+              History Insights
+            </h4>
+            <div class="space-y-5">
+              <div class="flex justify-between items-end border-b border-white/10 pb-3">
+                <span class="text-sm opacity-70">Total Queries</span>
+                <span class="text-2xl font-black" id="totalQueriesStat">0</span>
+              </div>
+              <div class="flex justify-between items-end border-b border-white/10 pb-3">
+                <span class="text-sm opacity-70">Helpful Answers</span>
+                <span class="text-2xl font-black text-green-400" id="helpfulStat">0</span>
+              </div>
+              <div class="flex justify-between items-end">
+                <span class="text-sm opacity-70">Not Helpful</span>
+                <span class="text-2xl font-black text-red-400" id="notHelpfulStat">0</span>
+              </div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[140px] opacity-10 pointer-events-none">query_stats</span>
+        </div>
+
+        <div class="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm">
+          <h4 class="text-primary text-xs tracking-widest mb-4 font-bold uppercase">Quick Actions</h4>
+          <div class="flex flex-col gap-2">
+            <a href="chat.html" class="flex items-center gap-3 px-4 py-3 bg-surface-container-low rounded-xl hover:bg-engineering-blue-light hover:text-primary transition-colors group">
+              <span class="material-symbols-outlined text-primary">chat</span>
+              <span class="text-sm font-semibold text-on-surface group-hover:text-primary">New Chat Session</span>
+            </a>
+            <a href="checklist.html" class="flex items-center gap-3 px-4 py-3 bg-surface-container-low rounded-xl hover:bg-engineering-blue-light hover:text-primary transition-colors group">
+              <span class="material-symbols-outlined text-primary">checklist</span>
+              <span class="text-sm font-semibold text-on-surface group-hover:text-primary">Generate Checklist</span>
+            </a>
+            <a href="upload.html" class="flex items-center gap-3 px-4 py-3 bg-surface-container-low rounded-xl hover:bg-engineering-blue-light hover:text-primary transition-colors group">
+              <span class="material-symbols-outlined text-primary">upload_file</span>
+              <span class="text-sm font-semibold text-on-surface group-hover:text-primary">Upload New Rulebook</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const BACKEND_URL = "http://127.0.0.1:8000"
+  let allChats = []
+
+  window.onload = function() {
+    const userId  = localStorage.getItem('user_id')
+    const name    = localStorage.getItem('userName') || 'User'
+    const role    = localStorage.getItem('userRole')  || 'Member'
+    const team    = localStorage.getItem('teamName')  || 'Team'
+    const isAdmin = localStorage.getItem('is_admin')
+
+    if (!userId) { window.location.href = 'login.html'; return; }
+    if (isAdmin == 1) document.getElementById('adminLink').style.display = 'flex'
+
+    const initial = name[0].toUpperCase()
+    document.getElementById('sidebarName').textContent  = name
+    document.getElementById('sidebarTeam').textContent  = team
+    document.getElementById('headerName').textContent   = name
+    document.getElementById('headerRole').textContent   = role
+    document.getElementById('userAvatar').textContent   = initial
+    document.getElementById('headerAvatar').textContent = initial
+
+    loadHistory(userId)
+  }
+
+  function loadHistory(userId) {
+    fetch(`${BACKEND_URL}/history/${userId}`)
+    .then(r => r.json())
+    .then(chats => {
+      allChats = chats
+      renderHistory(chats)
+      document.getElementById('totalQueriesStat').textContent = chats.length
+      document.getElementById('helpfulStat').textContent      = chats.filter(c => c.feedback === 'up').length
+      document.getElementById('notHelpfulStat').textContent   = chats.filter(c => c.feedback === 'down').length
+    })
+    .catch(() => {
+      document.getElementById('historyContainer').innerHTML =
+        '<p class="text-center text-red-500 py-20">Error loading history! Make sure backend is running.</p>'
+    })
+  }
+
+  function renderHistory(chats) {
+    const container = document.getElementById('historyContainer')
+    if (chats.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-20">
+          <div class="text-6xl mb-4">💬</div>
+          <p class="text-on-surface-variant mb-6 text-base">No chat history yet!</p>
+          <a href="chat.html" class="bg-primary text-white px-6 py-3 rounded-xl font-bold inline-block hover:opacity-90">Start Chatting →</a>
+        </div>`
+      return
+    }
+
+    let html = '<div class="flex flex-col gap-4">'
+    html += `
+      <div class="flex items-center gap-4 mb-2">
+        <span class="text-xs text-primary bg-engineering-blue-light px-3 py-1 rounded-full uppercase tracking-widest font-bold border border-primary/10">Recent</span>
+        <div class="h-[1px] flex-1 bg-outline-variant opacity-30"></div>
+      </div>`
+
+    chats.forEach((chat, index) => {
+      const feedback      = chat.feedback === 'up'   ? '👍 Helpful' :
+                            chat.feedback === 'down' ? '👎 Not Helpful' : '— No Feedback'
+      const feedbackColor = chat.feedback === 'up'   ? 'text-green-600 bg-green-50 border-green-200' :
+                            chat.feedback === 'down' ? 'text-red-500 bg-red-50 border-red-200' :
+                                                       'text-on-surface-variant bg-surface-container-low border-outline-variant'
+      const dateStr = chat.created_at ? chat.created_at.toString().split('T')[0] : ''
+
+      html += `
+        <div class="bg-white border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-all group fade-in">
+          <div class="p-5 flex gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-engineering-blue-light rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined">engineering</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start mb-1 gap-2">
+                <h3 class="font-bold text-base text-on-surface group-hover:text-primary transition-colors line-clamp-1">${escapeHtml(chat.question)}</h3>
+                <span class="text-xs text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded font-mono flex-shrink-0">${dateStr}</span>
+              </div>
+              <p class="text-xs text-on-surface-variant mb-3 font-mono uppercase tracking-wider">Query ID: BJ-2025-${String(index + 1).padStart(4, '0')}</p>
+              <div class="bg-surface-container-low border-l-4 border-primary p-3 rounded-r-lg mb-3">
+                <p class="text-sm text-on-surface-variant italic line-clamp-2">${escapeHtml(chat.answer.substring(0, 180))}...</p>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs font-semibold px-2 py-1 rounded-full border ${feedbackColor}">${feedback}</span>
+                <button onclick="resumeChat(${index})" class="flex items-center gap-1 text-primary font-bold text-sm hover:underline group/btn">
+                  Resume Chat
+                  <span class="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`
+    })
+
+    html += '</div>'
+    container.innerHTML = html
+  }
+
+  // ✅ Uses index - works for ALL history items not just first one
+  function resumeChat(index) {
+    const chat = allChats[index]
+    if (!chat) return
+    localStorage.setItem('resumeQuestion', chat.question)
+    localStorage.setItem('resumeAnswer', chat.answer)
+    window.location.href = 'chat.html'
+  }
+
+  function filterHistory() {
+    const q = document.getElementById('searchInput').value.toLowerCase()
+    const filtered = allChats.filter(c =>
+      c.question.toLowerCase().includes(q) ||
+      c.answer.toLowerCase().includes(q)
+    )
+    renderHistory(filtered)
+  }
+
+  function exportHistory() {
+    if (!allChats.length) return
+    let text = 'BAJA RuleBot - Chat History Export\n\n'
+    allChats.forEach((c, i) => {
+      text += `Query ${i+1}\nQ: ${c.question}\nA: ${c.answer}\nFeedback: ${c.feedback || 'none'}\nDate: ${c.created_at}\n\n---\n\n`
+    })
+    const blob = new Blob([text], { type: 'text/plain' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'baja-history.txt'
+    a.click()
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>

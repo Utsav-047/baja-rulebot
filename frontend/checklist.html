@@ -1,0 +1,610 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist – BAJA RuleBot</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f8fafc; color: #0f172a; }
+    .navbar { background: rgba(255,255,255,0.95); box-shadow: 0 1px 0 rgba(0,0,0,0.08); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
+    .navbar-logo { display: flex; align-items: center; gap: 12px; }
+    .logo-badge { background: #f97316; color: white; font-weight: 800; padding: 6px 12px; border-radius: 8px; font-size: 16px; }
+    .logo-text { font-size: 18px; font-weight: 700; color: #0f172a; }
+    .navbar-links { display: flex; gap: 24px; list-style: none; }
+    .navbar-links a { color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .navbar-links a:hover { color: #f97316; }
+
+    /* PAGE */
+    .page-container {
+      min-height: calc(100vh - 60px);
+      background: linear-gradient(135deg, #fff7ed 0%, #f8fafc 50%, #fff7ed 100%);
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-container h2 { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 8px; text-align: center; }
+    .page-container h2 span { color: #f97316; }
+    .page-container > p { color: #64748b; margin-bottom: 40px; text-align: center; font-size: 15px; }
+
+    /* CATEGORY BUTTONS */
+    .category-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 36px; }
+    .cat-btn {
+      background: white;
+      color: #374151;
+      border: 1.5px solid #e2e8f0;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .cat-btn:hover, .cat-btn.active {
+      background: #f97316;
+      color: white;
+      border-color: #f97316;
+      box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+      transform: translateY(-2px);
+    }
+
+    /* CHECKLIST BOX */
+    .checklist-box {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 36px;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .checklist-item:hover { background: #fff7ed; border-color: #fed7aa; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; accent-color: #f97316; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+    .checklist-item span { color: #374151; font-size: 14px; line-height: 1.6; }
+
+    .checklist-title { font-size: 18px; font-weight: 700; color: #f97316; margin-bottom: 20px; }
+    .empty-msg { color: #94a3b8; text-align: center; padding: 40px 0; font-size: 14px; }
+    .loading-msg { color: #f97316; text-align: center; padding: 40px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <div class="logo-badge">BAJA</div>
+      <span class="logo-text">RuleBot</span>
+    </div>
+    <ul class="navbar-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="upload.html">Upload Rulebook</a></li>
+      <li><a href="chat.html">Chat</a></li>
+      <li><a href="checklist.html">Checklist</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-container">
+    <h2>Generate <span>Checklist</span></h2>
+    <p>Select a category to generate a compliance checklist from the rulebook</p>
+
+    <div class="category-row">
+      <button class="cat-btn" onclick="generateChecklist('technical inspection', this)">🔧 Technical Inspection</button>
+      <button class="cat-btn" onclick="generateChecklist('billing and documents', this)">📄 Billing & Documents</button>
+      <button class="cat-btn" onclick="generateChecklist('driver safety equipment', this)">🪖 Driver Safety</button>
+      <button class="cat-btn" onclick="generateChecklist('static events', this)">🏆 Static Events</button>
+      <button class="cat-btn" onclick="generateChecklist('electrical safety', this)">⚡ Electrical Safety</button>
+    </div>
+
+    <div class="checklist-box">
+      <div id="checklistOutput">
+        <p class="empty-msg">📋 Click a category above to generate checklist</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = "http://127.0.0.1:8000"
+
+    function generateChecklist(category, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+
+      const output = document.getElementById('checklistOutput')
+      output.innerHTML = '<p class="loading-msg">⏳ Generating checklist...</p>'
+
+      fetch(`${BACKEND_URL}/chat`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: `Generate a detailed compliance checklist for ${category} based on the rulebook. Format it as a numbered list of items to check.`,
+          role: 'Team Member'
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        const items = (data.answer || data.error).split('\n').filter(l => l.trim())
+        let html = `<div class="checklist-title">✅ ${category.toUpperCase()} CHECKLIST</div>`
+        items.forEach(item => {
+          if (item.trim()) {
+            html += `<div class="checklist-item">
+              <input type="checkbox">
+              <span>${item}</span>
+            </div>`
+          }
+        })
+        output.innerHTML = html
+      })
+      .catch(() => {
+        output.innerHTML = '<p style="color:#ef4444; text-align:center; padding:40px 0;">❌ Error! Please upload rulebook first.</p>'
+      })
+    }
+  </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BAJA RuleBot - Compliance Checklist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme: { extend: {
+      colors: {
+        "outline-variant":"#c2c6d4","on-surface":"#0b1c30","surface-container-low":"#eff4ff",
+        "outline":"#727783","surface-container-high":"#dce9ff","on-surface-variant":"#424752",
+        "engineering-blue-light":"#EAEEFB","on-primary":"#ffffff","on-background":"#0b1c30",
+        "metallic-slate":"#1E293B","safety-orange":"#F57C00","surface-container":"#e5eeff",
+        "surface-bright":"#f8f9ff","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5",
+        "primary-fixed":"#d6e3ff","surface":"#f8f9ff","primary":"#004183","background":"#f8f9ff",
+        "surface-container-highest":"#d3e4fe","error":"#ba1a1a","racing-yellow":"#FFD600",
+        "primary-container":"#0058ae","secondary":"#2850cf","cad-gray":"#F1F5F9",
+        "surface-container-lowest":"#ffffff","on-primary-container":"#bad1ff"
+      },
+      borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+      spacing:{"gutter":"24px","base":"8px","margin-mobile":"16px","margin-desktop":"48px"},
+      fontFamily:{
+        "headline-lg":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],
+        "body-lg":["Inter"],"code-snippet":["JetBrains Mono"],"body-md":["Inter"],
+        "body-sm":["Inter"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"]
+      },
+      fontSize:{
+        "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],
+        "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "code-snippet":["13px",{"lineHeight":"20px","fontWeight":"400"}],
+        "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+        "label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}]
+      }
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .sidebar-active { background-color:#004183; color:white; font-weight:700; }
+  .custom-scrollbar::-webkit-scrollbar { width:4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeInUp 0.35s ease forwards; }
+  .cat-btn.active { background:#004183 !important; color:white !important; border-color:#004183 !important; }
+  .checklist-item input[type="checkbox"]:checked + label { text-decoration:line-through; color:#94a3b8; }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-surface">
+
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 bottom-0 w-64 bg-surface border-r border-outline-variant flex flex-col z-50">
+  <div class="px-6 py-8">
+    <h1 class="font-headline-md text-primary text-2xl tracking-tight">BAJA <span class="font-bold">RuleBot</span></h1>
+  </div>
+  <div class="px-4 mb-6">
+    <div class="bg-surface-container rounded-xl p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+        <span class="material-symbols-outlined">precision_manufacturing</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-[10px] text-on-surface-variant uppercase" id="sidebarTeam">Team</p>
+        <p class="font-body-sm font-semibold text-primary" id="sidebarName">User</p>
+      </div>
+    </div>
+  </div>
+  <button onclick="window.location.href='chat.html'" class="mx-4 bg-primary text-on-primary rounded-xl font-bold py-3 px-4 flex items-center justify-center gap-2 mb-8 hover:opacity-90 transition-all shadow-md">
+    <span class="material-symbols-outlined text-[20px]">add</span>
+    <span class="font-label-caps text-xs">New Rule Check</span>
+  </button>
+  <nav class="flex-1 px-4 flex flex-col gap-1">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="chat.html">
+      <span class="material-symbols-outlined">chat_bubble</span>
+      <span class="font-label-caps text-xs uppercase">Chat</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="history.html">
+      <span class="material-symbols-outlined">history</span>
+      <span class="font-label-caps text-xs uppercase">History</span>
+    </a>
+    <a class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg" href="checklist.html">
+      <span class="material-symbols-outlined">checklist</span>
+      <span class="font-label-caps text-xs uppercase">Checklist</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="upload.html">
+      <span class="material-symbols-outlined">upload_file</span>
+      <span class="font-label-caps text-xs uppercase">Upload</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="admin.html">
+      <span class="material-symbols-outlined">settings_applications</span>
+      <span class="font-label-caps text-xs uppercase">Admin</span>
+    </a>
+  </nav>
+  <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
+    <a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container" href="index.html">
+      <span class="material-symbols-outlined text-[20px]">home</span>
+      <span class="font-label-caps text-[11px] uppercase">Home</span>
+    </a>
+    <a onclick="logout()" class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-red-50 hover:text-red-500 cursor-pointer">
+      <span class="material-symbols-outlined text-[20px]">logout</span>
+      <span class="font-label-caps text-[11px] uppercase">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- HEADER -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-surface border-b border-outline-variant px-8 flex items-center justify-between z-40">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary">checklist</span>
+    <h2 class="font-headline-md text-[18px] font-bold text-metallic-slate">Compliance Checklist Generator</h2>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 text-[11px] font-label-caps text-on-surface-variant px-3 py-1.5 bg-cad-gray rounded-full border border-outline-variant">
+      <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+      AI POWERED
+    </div>
+    <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-sm" id="headerAvatar">U</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="ml-64 mt-16 p-8 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- PAGE TITLE -->
+    <div class="mb-8">
+      <div class="inline-block h-1 w-12 bg-primary mb-4"></div>
+      <h2 class="font-headline-lg text-headline-lg text-primary mb-2">Generate Checklist</h2>
+      <p class="font-body-md text-on-surface-variant">Select a category to generate an AI-powered compliance checklist from your uploaded rulebook.</p>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+
+      <!-- LEFT: CATEGORIES + OUTPUT -->
+      <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+
+        <!-- CATEGORY BUTTONS -->
+        <div class="bg-surface border border-outline-variant rounded-xl p-6 shadow-sm">
+          <h3 class="font-label-caps text-xs text-primary tracking-widest mb-4">SELECT CATEGORY</h3>
+          <div class="flex flex-wrap gap-3">
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('technical inspection', this)">
+              <span class="material-symbols-outlined text-sm">build</span> Technical Inspection
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('billing and documents', this)">
+              <span class="material-symbols-outlined text-sm">description</span> Billing & Documents
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('driver safety equipment', this)">
+              <span class="material-symbols-outlined text-sm">security</span> Driver Safety
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('static events', this)">
+              <span class="material-symbols-outlined text-sm">emoji_events</span> Static Events
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('electrical safety', this)">
+              <span class="material-symbols-outlined text-sm">bolt</span> Electrical Safety
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('roll cage requirements', this)">
+              <span class="material-symbols-outlined text-sm">architecture</span> Roll Cage
+            </button>
+            <button class="cat-btn flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant rounded-xl font-label-caps text-xs text-on-surface-variant hover:border-primary/40 hover:text-primary hover:bg-engineering-blue-light transition-all"
+              onclick="generateChecklist('brake system requirements', this)">
+              <span class="material-symbols-outlined text-sm">emergency_heat</span> Brake System
+            </button>
+          </div>
+        </div>
+
+        <!-- CHECKLIST OUTPUT -->
+        <div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm" id="checklistCard">
+
+          <!-- EMPTY STATE -->
+          <div id="emptyState" class="flex flex-col items-center justify-center py-20 px-8 text-center">
+            <div class="w-16 h-16 bg-engineering-blue-light rounded-2xl flex items-center justify-center mb-4">
+              <span class="material-symbols-outlined text-[32px] text-primary/40">checklist</span>
+            </div>
+            <h3 class="font-headline-md text-lg text-on-surface mb-2">Select a Category</h3>
+            <p class="font-body-sm text-on-surface-variant">Click any category button above to generate an AI-powered compliance checklist from your rulebook.</p>
+          </div>
+
+          <!-- LOADING STATE -->
+          <div id="loadingState" class="hidden flex flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-engineering-blue-light border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="font-label-caps text-xs text-on-surface-variant">Generating checklist from rulebook...</p>
+          </div>
+
+          <!-- CHECKLIST CONTENT -->
+          <div id="checklistContent" class="hidden">
+            <!-- Header -->
+            <div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary" id="checklistIcon">checklist</span>
+                <div>
+                  <h3 class="font-headline-md text-base font-bold text-metallic-slate" id="checklistTitle">Checklist</h3>
+                  <p class="font-code-snippet text-xs text-on-surface-variant" id="checklistMeta">0 items</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="resetChecklist()" class="flex items-center gap-1 px-3 py-1.5 text-on-surface-variant border border-outline-variant rounded-lg font-label-caps text-xs hover:bg-surface-container transition-colors">
+                  <span class="material-symbols-outlined text-sm">refresh</span> Reset
+                </button>
+                <button onclick="exportChecklist()" class="flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-lg font-label-caps text-xs hover:opacity-90 transition-all">
+                  <span class="material-symbols-outlined text-sm">download</span> Export
+                </button>
+              </div>
+            </div>
+
+            <!-- PROGRESS BAR -->
+            <div class="px-6 py-4 border-b border-outline-variant bg-cad-gray">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-label-caps text-xs text-on-surface-variant">COMPLETION PROGRESS</span>
+                <span class="font-label-caps text-xs text-primary" id="progressText">0 / 0 completed</span>
+              </div>
+              <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                <div class="bg-primary h-full rounded-full transition-all duration-500" id="progressBar" style="width:0%"></div>
+              </div>
+            </div>
+
+            <!-- ITEMS -->
+            <div class="p-6 flex flex-col gap-3" id="checklistItems"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+
+        <!-- STATS CARD -->
+        <div class="bg-metallic-slate rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+          <div class="relative z-10">
+            <h4 class="font-label-caps text-racing-yellow text-xs tracking-widest mb-6 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">monitoring</span>
+              SESSION STATS
+            </h4>
+            <div class="space-y-5">
+              <div class="flex justify-between items-end border-b border-white/10 pb-3">
+                <span class="text-body-sm opacity-70">Total Items</span>
+                <span class="text-2xl font-bold" id="statTotal">—</span>
+              </div>
+              <div class="flex justify-between items-end border-b border-white/10 pb-3">
+                <span class="text-body-sm opacity-70">Completed</span>
+                <span class="text-2xl font-bold text-racing-yellow" id="statCompleted">—</span>
+              </div>
+              <div class="flex justify-between items-end">
+                <span class="text-body-sm opacity-70">Remaining</span>
+                <span class="text-2xl font-bold" id="statRemaining">—</span>
+              </div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[140px] opacity-10 pointer-events-none">fact_check</span>
+        </div>
+
+        <!-- TIPS CARD -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6">
+          <h4 class="font-label-caps text-primary text-xs tracking-widest mb-4">INSPECTION TIPS</h4>
+          <div class="flex flex-col gap-3">
+            <div class="p-3 bg-engineering-blue-light border border-primary/10 rounded-lg">
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-primary text-sm mt-0.5">tips_and_updates</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">Upload the latest 2026 rulebook PDF for the most accurate checklist results.</p>
+              </div>
+            </div>
+            <div class="p-3 bg-cad-gray border border-outline-variant rounded-lg">
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-safety-orange text-sm mt-0.5">warning</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">Always cross-verify with the official SAE rulebook before tech inspection.</p>
+              </div>
+            </div>
+            <div class="p-3 bg-cad-gray border border-outline-variant rounded-lg">
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
+                <p class="text-xs text-on-surface-variant leading-relaxed">Tick each item as you verify it. Progress is tracked in real-time.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTHER CATEGORIES -->
+        <div class="bg-surface border border-outline-variant rounded-2xl p-6">
+          <h4 class="font-label-caps text-primary text-xs tracking-widest mb-4">QUICK LINKS</h4>
+          <div class="flex flex-col gap-2">
+            <button onclick="window.location.href='chat.html'" class="flex items-center gap-3 px-4 py-2.5 bg-cad-gray border border-outline-variant rounded-xl hover:border-primary/30 transition-colors text-on-surface-variant font-label-caps text-xs text-left">
+              <span class="material-symbols-outlined text-sm text-primary">chat</span> Ask a Rule Question
+            </button>
+            <button onclick="window.location.href='upload.html'" class="flex items-center gap-3 px-4 py-2.5 bg-cad-gray border border-outline-variant rounded-xl hover:border-primary/30 transition-colors text-on-surface-variant font-label-caps text-xs text-left">
+              <span class="material-symbols-outlined text-sm text-primary">upload_file</span> Upload Rulebook
+            </button>
+            <button onclick="window.location.href='history.html'" class="flex items-center gap-3 px-4 py-2.5 bg-cad-gray border border-outline-variant rounded-xl hover:border-primary/30 transition-colors text-on-surface-variant font-label-caps text-xs text-left">
+              <span class="material-symbols-outlined text-sm text-primary">history</span> View Chat History
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const BACKEND_URL = "http://127.0.0.1:8000"
+  let currentCategory = ''
+  let totalItems = 0
+
+  window.onload = function() {
+    const name = localStorage.getItem('userName') || 'User'
+    const team = localStorage.getItem('teamName') || 'Team'
+    document.getElementById('sidebarName').textContent = name
+    document.getElementById('sidebarTeam').textContent = team
+    document.getElementById('headerAvatar').textContent = name.charAt(0).toUpperCase()
+  }
+
+  const categoryIcons = {
+    'technical inspection': 'build',
+    'billing and documents': 'description',
+    'driver safety equipment': 'security',
+    'static events': 'emoji_events',
+    'electrical safety': 'bolt',
+    'roll cage requirements': 'architecture',
+    'brake system requirements': 'emergency_heat'
+  }
+
+  function generateChecklist(category, btn) {
+    // Update active button
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    currentCategory = category
+
+    // Show loading
+    document.getElementById('emptyState').classList.add('hidden')
+    document.getElementById('loadingState').classList.remove('hidden')
+    document.getElementById('checklistContent').classList.add('hidden')
+
+    fetch(`${BACKEND_URL}/chat`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        question: `Generate a detailed compliance checklist for ${category} based on the rulebook. Format it as a numbered list of items to check. Each item should be on a new line.`,
+        role: localStorage.getItem('userRole') || 'Team Member'
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      const answer = data.answer || data.error
+      const items = answer.split('\n').filter(l => l.trim() && l.trim().length > 3)
+      renderChecklist(category, items)
+    })
+    .catch(() => {
+      document.getElementById('loadingState').classList.add('hidden')
+      document.getElementById('emptyState').classList.remove('hidden')
+      document.getElementById('emptyState').innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20 px-8 text-center">
+          <span class="material-symbols-outlined text-[48px] text-red-300 mb-4">error</span>
+          <p class="text-red-500 font-body-sm">Error! Please upload a rulebook first.</p>
+          <button onclick="window.location.href='upload.html'" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg font-label-caps text-xs hover:opacity-90">Upload Rulebook</button>
+        </div>`
+    })
+  }
+
+  function renderChecklist(category, items) {
+    totalItems = items.length
+    document.getElementById('loadingState').classList.add('hidden')
+    document.getElementById('checklistContent').classList.remove('hidden')
+    document.getElementById('checklistContent').classList.add('fade-in')
+
+    const icon = categoryIcons[category] || 'checklist'
+    document.getElementById('checklistIcon').textContent = icon
+    document.getElementById('checklistTitle').textContent = category.toUpperCase() + ' CHECKLIST'
+    document.getElementById('checklistMeta').textContent = `${items.length} compliance items`
+
+    document.getElementById('statTotal').textContent = items.length
+    document.getElementById('statCompleted').textContent = 0
+    document.getElementById('statRemaining').textContent = items.length
+    updateProgress()
+
+    const container = document.getElementById('checklistItems')
+    container.innerHTML = items.map((item, i) => `
+      <div class="group flex items-start gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary/30 hover:bg-engineering-blue-light/30 transition-all" id="item-${i}">
+        <input type="checkbox" id="cb-${i}" onchange="toggleItem(${i})"
+          class="mt-0.5 w-4 h-4 accent-primary cursor-pointer flex-shrink-0 rounded"/>
+        <label for="cb-${i}" class="font-body-sm text-on-surface leading-relaxed cursor-pointer flex-1" id="label-${i}">
+          ${item.replace(/^\d+[\.\)]\s*/, '')}
+        </label>
+        <span class="material-symbols-outlined text-sm text-on-surface-variant/30 group-hover:text-primary/40 transition-colors flex-shrink-0">check_circle</span>
+      </div>`).join('')
+  }
+
+  function toggleItem(index) {
+    const cb = document.getElementById(`cb-${index}`)
+    const label = document.getElementById(`label-${index}`)
+    const item = document.getElementById(`item-${index}`)
+
+    if (cb.checked) {
+      label.classList.add('line-through', 'text-on-surface-variant/50')
+      item.classList.add('opacity-60')
+    } else {
+      label.classList.remove('line-through', 'text-on-surface-variant/50')
+      item.classList.remove('opacity-60')
+    }
+    updateProgress()
+  }
+
+  function updateProgress() {
+    const checkboxes = document.querySelectorAll('[id^="cb-"]')
+    const completed = [...checkboxes].filter(cb => cb.checked).length
+    const total = checkboxes.length || totalItems
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+
+    document.getElementById('progressBar').style.width = pct + '%'
+    document.getElementById('progressText').textContent = `${completed} / ${total} completed`
+    document.getElementById('statCompleted').textContent = completed
+    document.getElementById('statRemaining').textContent = total - completed
+  }
+
+  function resetChecklist() {
+    document.querySelectorAll('[id^="cb-"]').forEach((cb, i) => {
+      cb.checked = false
+      const label = document.getElementById(`label-${i}`)
+      const item = document.getElementById(`item-${i}`)
+      if (label) label.classList.remove('line-through', 'text-on-surface-variant/50')
+      if (item) item.classList.remove('opacity-60')
+    })
+    updateProgress()
+  }
+
+  function exportChecklist() {
+    const items = [...document.querySelectorAll('[id^="label-"]')]
+      .map((l, i) => {
+        const cb = document.getElementById(`cb-${i}`)
+        return `[${cb.checked ? 'X' : ' '}] ${l.textContent.trim()}`
+      }).join('\n')
+    const text = `BAJA RuleBot - ${currentCategory.toUpperCase()} CHECKLIST\n${'='.repeat(50)}\n\n${items}`
+    const blob = new Blob([text], {type:'text/plain'})
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `baja-checklist-${currentCategory.replace(/\s+/g,'-')}.txt`
+    a.click()
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>

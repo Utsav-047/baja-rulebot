@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BAJA RuleBot - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme: { extend: {
+      colors: {
+        "outline-variant":"#c2c6d4","on-surface":"#0b1c30","surface-container-low":"#eff4ff",
+        "outline":"#727783","surface-container-high":"#dce9ff","on-surface-variant":"#424752",
+        "engineering-blue-light":"#EAEEFB","on-primary":"#ffffff","on-background":"#0b1c30",
+        "metallic-slate":"#1E293B","safety-orange":"#F57C00","surface-container":"#e5eeff",
+        "surface-bright":"#f8f9ff","surface-dim":"#cbdbf5","primary-fixed":"#d6e3ff",
+        "surface":"#f8f9ff","primary":"#004183","background":"#f8f9ff",
+        "surface-container-highest":"#d3e4fe","error":"#ba1a1a","racing-yellow":"#FFD600",
+        "primary-container":"#0058ae","secondary":"#2850cf","cad-gray":"#F1F5F9",
+        "surface-container-lowest":"#ffffff","on-primary-container":"#bad1ff",
+        "surface-variant":"#d3e4fe"
+      },
+      borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+      spacing:{"gutter":"24px","base":"8px","margin-mobile":"16px","margin-desktop":"48px"},
+      fontFamily:{
+        "headline-lg":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],
+        "body-lg":["Inter"],"code-snippet":["JetBrains Mono"],"body-md":["Inter"],
+        "body-sm":["Inter"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"]
+      },
+      fontSize:{
+        "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],
+        "headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"800"}],
+        "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "code-snippet":["13px",{"lineHeight":"20px","fontWeight":"400"}],
+        "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+        "label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}]
+      }
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .industrial-grid {
+    background-image: radial-gradient(#1E293B 0.5px, transparent 0.5px);
+    background-size: 24px 24px; opacity: 0.04;
+  }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeInUp 0.5s ease forwards; }
+  .tab-active { background:#004183 !important; color:white !important; }
+  input:focus { outline:none; border-color:#004183 !important; box-shadow:0 0 0 3px rgba(0,65,131,0.1); }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-surface min-h-screen flex overflow-hidden">
+
+<!-- LEFT PANEL -->
+<div class="hidden lg:flex w-1/2 bg-metallic-slate relative overflow-hidden flex-col justify-between p-16">
+  <div class="absolute inset-0 industrial-grid pointer-events-none"></div>
+  <div class="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+
+  <div class="relative z-10">
+    <div class="flex items-center gap-3 mb-16">
+      <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-white">precision_manufacturing</span>
+      </div>
+      <span class="font-headline-md text-white text-xl font-black">BAJA RuleBot</span>
+    </div>
+    <h1 class="font-headline-xl text-white leading-tight mb-6">
+      Your AI-Powered<br/>
+      <span style="color:#FFD600;">Technical</span><br/>
+      Rule Assistant
+    </h1>
+    <p class="font-body-lg text-white/60 leading-relaxed max-w-sm">
+      Navigate complex SAE BAJA regulations with precision. Get instant, verified answers from your rulebook.
+    </p>
+  </div>
+
+  <div class="relative z-10 flex flex-col gap-4">
+    <div class="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+      <div class="w-10 h-10 bg-primary/30 rounded-lg flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-white text-sm">upload_file</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-white text-xs">UPLOAD ANY RULEBOOK</p>
+        <p class="font-body-sm text-white/50 text-xs mt-0.5">PDF processing with instant AI indexing</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+      <div class="w-10 h-10 bg-primary/30 rounded-lg flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-white text-sm">chat</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-white text-xs">ASK IN PLAIN ENGLISH</p>
+        <p class="font-body-sm text-white/50 text-xs mt-0.5">Natural language queries on complex rules</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+      <div class="w-10 h-10 bg-primary/30 rounded-lg flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-white text-sm">checklist</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-white text-xs">COMPLIANCE CHECKLISTS</p>
+        <p class="font-body-sm text-white/50 text-xs mt-0.5">Auto-generate inspection checklists</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative z-10 mt-8">
+    <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 rounded-full">
+      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+      <span class="font-label-caps text-white/60 text-[10px]">GROQ LLAMA 3.3-70B POWERED</span>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-surface overflow-y-auto">
+  <div class="w-full max-w-md fade-in">
+
+    <!-- HEADER -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-8 lg:hidden">
+        <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-sm">precision_manufacturing</span>
+        </div>
+        <span class="font-headline-md text-primary text-lg font-black">BAJA RuleBot</span>
+      </div>
+      <h2 class="font-headline-lg text-headline-lg text-on-background mb-2">Welcome back</h2>
+      <p class="font-body-md text-on-surface-variant">Sign in to your account or create a new one.</p>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex gap-1 p-1 bg-cad-gray rounded-xl mb-8 border border-outline-variant">
+      <button id="tabLoginBtn" onclick="showLogin()"
+        class="tab-active flex-1 py-2.5 rounded-lg font-label-caps text-xs transition-all">
+        Login
+      </button>
+      <button id="tabRegisterBtn" onclick="showRegister()"
+        class="flex-1 py-2.5 rounded-lg font-label-caps text-xs text-on-surface-variant transition-all hover:bg-surface-container">
+        Register
+      </button>
+    </div>
+
+    <!-- ───── LOGIN FORM ───── -->
+    <div id="loginForm">
+      <div class="flex flex-col gap-4">
+
+        <!-- Email -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Email Address</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
+            <input type="email" id="loginEmail" placeholder="you@team.com"
+              class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+          </div>
+        </div>
+
+        <!-- Password + show/hide -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
+            <input type="password" id="loginPassword" placeholder="Enter your password"
+              class="w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"
+              onkeydown="if(event.key==='Enter') handleLogin()"/>
+            <button type="button" onclick="togglePass('loginPassword','loginPassIcon')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[20px]" id="loginPassIcon">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="loginError" class="hidden flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <span class="material-symbols-outlined text-red-500 text-sm">error</span>
+          <p class="font-body-sm text-red-600 text-sm" id="loginErrorText"></p>
+        </div>
+
+        <button onclick="handleLogin()"
+          class="w-full bg-primary text-white py-3.5 rounded-xl font-bold font-label-caps hover:opacity-90 active:scale-[0.99] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-2">
+          Sign In
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+
+      </div>
+
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1 h-px bg-outline-variant"></div>
+        <span class="font-label-caps text-[10px] text-on-surface-variant">OR</span>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+      <p class="text-center font-body-sm text-on-surface-variant text-sm">
+        Don't have an account?
+        <button onclick="showRegister()" class="text-primary font-bold hover:underline ml-1">Register here</button>
+      </p>
+    </div>
+
+    <!-- ───── REGISTER FORM ───── -->
+    <div id="registerForm" class="hidden">
+      <div class="flex flex-col gap-4">
+
+        <!-- Full Name -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Full Name</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+            <input type="text" id="regName" placeholder="Your full name"
+              class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Email Address</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
+            <input type="email" id="regEmail" placeholder="you@team.com"
+              class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+          </div>
+        </div>
+
+        <!-- Password + show/hide -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
+            <input type="password" id="regPassword" placeholder="Create a password"
+              class="w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+            <button type="button" onclick="togglePass('regPassword','regPassIcon')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[20px]" id="regPassIcon">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password + show/hide -->
+        <div>
+          <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Confirm Password</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock_reset</span>
+            <input type="password" id="regConfirmPassword" placeholder="Re-enter your password"
+              class="w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+            <button type="button" onclick="togglePass('regConfirmPassword','regConfirmPassIcon')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[20px]" id="regConfirmPassIcon">visibility</span>
+            </button>
+          </div>
+          <!-- Password match indicator -->
+          <p class="font-label-caps text-[10px] mt-1.5 hidden" id="passwordMatchMsg"></p>
+        </div>
+
+        <!-- Team + Role -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Team Name</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">group</span>
+              <input type="text" id="regTeam" placeholder="Team name"
+                class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all"/>
+            </div>
+          </div>
+          <div>
+            <label class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider block mb-2">Role</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">badge</span>
+              <select id="regRole"
+                class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-xl font-body-sm text-on-surface transition-all appearance-none">
+                <option value="">Select role</option>
+                <option value="Team Member">Team Member</option>
+                <option value="Team Captain">Team Captain</option>
+                <option value="Faculty Advisor">Faculty Advisor</option>
+                <option value="Finance Manager">Finance Manager</option>
+                <option value="Department Manager">Dept. Manager</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="registerError" class="hidden flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <span class="material-symbols-outlined text-red-500 text-sm">error</span>
+          <p class="font-body-sm text-red-600 text-sm" id="registerErrorText"></p>
+        </div>
+
+        <!-- Success -->
+        <div id="registerSuccess" class="hidden flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl">
+          <span class="material-symbols-outlined text-green-600 text-sm">check_circle</span>
+          <p class="font-body-sm text-green-700 text-sm">Registered successfully! Redirecting to login...</p>
+        </div>
+
+        <button onclick="handleRegister()"
+          class="w-full bg-primary text-white py-3.5 rounded-xl font-bold font-label-caps hover:opacity-90 active:scale-[0.99] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-2">
+          Create Account
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+
+      </div>
+
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1 h-px bg-outline-variant"></div>
+        <span class="font-label-caps text-[10px] text-on-surface-variant">OR</span>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+      <p class="text-center font-body-sm text-on-surface-variant text-sm">
+        Already have an account?
+        <button onclick="showLogin()" class="text-primary font-bold hover:underline ml-1">Sign in here</button>
+      </p>
+    </div>
+
+    <p class="text-center font-label-caps text-[10px] text-on-surface-variant/50 mt-8">
+      © 2026 Esparse Matrix Solutions · BAJA RuleBot
+    </p>
+
+  </div>
+</div>
+
+<script>
+  const BACKEND_URL = "http://127.0.0.1:8000"
+
+  // ── Show / Hide password toggle ──
+  function togglePass(inputId, iconId) {
+    const input = document.getElementById(inputId)
+    const icon  = document.getElementById(iconId)
+    if (input.type === 'password') {
+      input.type = 'text'
+      icon.textContent = 'visibility_off'
+    } else {
+      input.type = 'password'
+      icon.textContent = 'visibility'
+    }
+  }
+
+  // ── Live password match check ──
+  document.addEventListener('DOMContentLoaded', () => {
+    const pass    = document.getElementById('regPassword')
+    const confirm = document.getElementById('regConfirmPassword')
+    const msg     = document.getElementById('passwordMatchMsg')
+
+    function checkMatch() {
+      if (!confirm.value) { msg.classList.add('hidden'); return; }
+      msg.classList.remove('hidden')
+      if (pass.value === confirm.value) {
+        msg.textContent = '✅ Passwords match'
+        msg.className = 'font-label-caps text-[10px] mt-1.5 text-green-600'
+        confirm.style.borderColor = '#16a34a'
+      } else {
+        msg.textContent = '❌ Passwords do not match'
+        msg.className = 'font-label-caps text-[10px] mt-1.5 text-red-500'
+        confirm.style.borderColor = '#ef4444'
+      }
+    }
+
+    pass.addEventListener('input', checkMatch)
+    confirm.addEventListener('input', checkMatch)
+  })
+
+  // ── Tab switching ──
+  function showLogin() {
+    document.getElementById('loginForm').classList.remove('hidden')
+    document.getElementById('registerForm').classList.add('hidden')
+    document.getElementById('tabLoginBtn').classList.add('tab-active')
+    document.getElementById('tabRegisterBtn').classList.remove('tab-active')
+    document.getElementById('tabRegisterBtn').classList.add('text-on-surface-variant')
+  }
+
+  function showRegister() {
+    document.getElementById('loginForm').classList.add('hidden')
+    document.getElementById('registerForm').classList.remove('hidden')
+    document.getElementById('tabRegisterBtn').classList.add('tab-active')
+    document.getElementById('tabLoginBtn').classList.remove('tab-active')
+    document.getElementById('tabLoginBtn').classList.add('text-on-surface-variant')
+  }
+
+  // ── Login ──
+  function handleLogin() {
+    const email    = document.getElementById('loginEmail').value.trim()
+    const password = document.getElementById('loginPassword').value.trim()
+    const errDiv   = document.getElementById('loginError')
+    const errText  = document.getElementById('loginErrorText')
+
+    if (!email || !password) {
+      errDiv.classList.remove('hidden')
+      errText.textContent = 'Please fill in all fields!'
+      return
+    }
+    errDiv.classList.add('hidden')
+
+    fetch(`${BACKEND_URL}/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { errDiv.classList.remove('hidden'); errText.textContent = data.error; return; }
+      localStorage.setItem('user_id',   data.user_id)
+      localStorage.setItem('userName',  data.name)
+      localStorage.setItem('userRole',  data.role)
+      localStorage.setItem('teamName',  data.team)
+      localStorage.setItem('is_admin',  data.is_admin)
+      window.location.href = data.is_admin == 1 ? 'admin.html' : 'upload.html'
+    })
+    .catch(() => { errDiv.classList.remove('hidden'); errText.textContent = 'Server error! Try again.'; })
+  }
+
+  // ── Register ──
+  function handleRegister() {
+    const name     = document.getElementById('regName').value.trim()
+    const email    = document.getElementById('regEmail').value.trim()
+    const password = document.getElementById('regPassword').value.trim()
+    const confirm  = document.getElementById('regConfirmPassword').value.trim()
+    const team     = document.getElementById('regTeam').value.trim()
+    const role     = document.getElementById('regRole').value
+    const errDiv   = document.getElementById('registerError')
+    const errText  = document.getElementById('registerErrorText')
+    const sucDiv   = document.getElementById('registerSuccess')
+
+    errDiv.classList.add('hidden')
+
+    if (!name || !email || !password || !confirm || !team || !role) {
+      errDiv.classList.remove('hidden'); errText.textContent = 'Please fill in all fields!'; return;
+    }
+    if (password !== confirm) {
+      errDiv.classList.remove('hidden'); errText.textContent = 'Passwords do not match!'; return;
+    }
+    if (password.length < 6) {
+      errDiv.classList.remove('hidden'); errText.textContent = 'Password must be at least 6 characters!'; return;
+    }
+
+    fetch(`${BACKEND_URL}/register`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, password, role, team })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { errDiv.classList.remove('hidden'); errText.textContent = data.error; return; }
+      sucDiv.classList.remove('hidden')
+      setTimeout(() => showLogin(), 2000)
+    })
+    .catch(() => { errDiv.classList.remove('hidden'); errText.textContent = 'Server error! Try again.'; })
+  }
+</script>
+</body>
+</html>

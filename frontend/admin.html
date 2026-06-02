@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BAJA RuleBot - Admin Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme: { extend: {
+      colors: {
+        "outline-variant":"#c2c6d4","on-surface":"#0b1c30","surface-container-low":"#eff4ff",
+        "outline":"#727783","surface-container-high":"#dce9ff","on-surface-variant":"#424752",
+        "engineering-blue-light":"#EAEEFB","on-primary":"#ffffff","on-background":"#0b1c30",
+        "metallic-slate":"#1E293B","safety-orange":"#F57C00","surface-container":"#e5eeff",
+        "surface-bright":"#f8f9ff","primary-fixed":"#d6e3ff","surface":"#f8f9ff",
+        "primary":"#004183","background":"#f8f9ff","surface-container-highest":"#d3e4fe",
+        "error":"#ba1a1a","racing-yellow":"#FFD600","primary-container":"#0058ae",
+        "secondary":"#2850cf","cad-gray":"#F1F5F9","surface-container-lowest":"#ffffff",
+        "on-primary-container":"#bad1ff","surface-dim":"#cbdbf5"
+      },
+      borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+      spacing:{"gutter":"24px","base":"8px","margin-mobile":"16px","margin-desktop":"48px"},
+      fontFamily:{
+        "headline-lg":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],
+        "body-lg":["Inter"],"code-snippet":["JetBrains Mono"],"body-md":["Inter"],
+        "body-sm":["Inter"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"]
+      },
+      fontSize:{
+        "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],
+        "headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"800"}],
+        "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "code-snippet":["13px",{"lineHeight":"20px","fontWeight":"400"}],
+        "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+        "label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}]
+      }
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; }
+  .sidebar-active { background-color:#004183; color:white; font-weight:700; }
+  .custom-scrollbar::-webkit-scrollbar { width:4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
+  .drag-active { border-color:#004183 !important; background-color:#EAEEFB !important; }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeInUp 0.4s ease forwards; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; }
+  .tab-active { background:#004183; color:white; }
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+
+<!-- SIDEBAR -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant flex flex-col p-base gap-gutter z-50">
+  <div class="px-2 py-4">
+    <h1 class="font-headline-md text-headline-md font-black text-primary">BAJA RuleBot</h1>
+    <p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Admin Panel</p>
+  </div>
+  <button onclick="window.location.href='chat.html'" class="bg-primary text-on-primary rounded-xl font-bold p-3 flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm mb-2">
+    <span class="material-symbols-outlined">add</span>
+    <span class="font-label-caps text-xs">New Rule Check</span>
+  </button>
+  <nav class="flex flex-col gap-1">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="chat.html">
+      <span class="material-symbols-outlined">chat</span>
+      <span class="font-label-caps text-xs">Chat</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="history.html">
+      <span class="material-symbols-outlined">history</span>
+      <span class="font-label-caps text-xs">History</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="checklist.html">
+      <span class="material-symbols-outlined">checklist</span>
+      <span class="font-label-caps text-xs">Checklist</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="upload.html">
+      <span class="material-symbols-outlined">upload_file</span>
+      <span class="font-label-caps text-xs">Upload</span>
+    </a>
+    <a class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl" href="admin.html">
+      <span class="material-symbols-outlined">settings_applications</span>
+      <span class="font-label-caps text-xs">Admin</span>
+    </a>
+  </nav>
+  <div class="mt-auto flex flex-col gap-1 border-t border-outline-variant pt-4">
+    <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="index.html">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-caps text-xs">Home</span>
+    </a>
+    <a onclick="logout()" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-red-50 hover:text-red-500 rounded-xl transition-all cursor-pointer">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="font-label-caps text-xs">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="ml-64 min-h-screen p-margin-desktop bg-surface-bright">
+
+  <!-- HEADER -->
+  <header class="mb-10">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <div class="inline-block h-1 w-12 bg-primary mb-4"></div>
+        <h2 class="font-headline-xl text-headline-xl text-primary mb-2">Admin Dashboard</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Manage users, chat history, and upload the global rulebook for all users.</p>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold" id="adminAvatar">A</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="grid grid-cols-3 gap-gutter mb-10">
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Total Users</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">group</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="totalUsers">0</p>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Total Chats</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">chat_bubble</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="totalChats">0</p>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Positive Feedback</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">thumb_up</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="totalFeedback">0</p>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid grid-cols-12 gap-gutter">
+
+    <!-- LEFT: GLOBAL RULEBOOK UPLOAD -->
+    <section class="col-span-12 lg:col-span-5">
+      <div class="bg-white border border-outline-variant rounded-xl p-8 flex flex-col shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1.5 h-full bg-primary rounded-l-xl"></div>
+
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+          <h3 class="font-headline-md text-headline-md text-metallic-slate">Global Rulebook</h3>
+        </div>
+        <p class="font-body-sm text-on-surface-variant mb-6 text-sm">Upload a rulebook that will be available to ALL users automatically.</p>
+
+        <!-- CURRENT GLOBAL RULEBOOK -->
+        <div id="globalRulebookStatus" class="hidden mb-6 flex items-center gap-3 p-4 bg-engineering-blue-light border border-primary/20 rounded-xl fade-in">
+          <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-white text-sm">picture_as_pdf</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-label-caps text-[10px] text-primary">CURRENT GLOBAL RULEBOOK</p>
+            <p class="font-body-sm font-bold text-on-surface truncate" id="globalFileName">—</p>
+          </div>
+          <div class="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"></span>
+            <span class="font-label-caps text-[9px]">ACTIVE</span>
+          </div>
+        </div>
+
+        <!-- DROP ZONE -->
+        <div id="adminDropZone"
+          class="border-2 border-dashed border-outline-variant rounded-xl flex-grow flex flex-col items-center justify-center p-8 transition-all duration-300 bg-surface-container-low hover:border-primary cursor-pointer group"
+          onclick="document.getElementById('adminFileInput').click()"
+          ondragover="handleAdminDragOver(event)"
+          ondragleave="handleAdminDragLeave(event)"
+          ondrop="handleAdminDrop(event)">
+          <div class="w-14 h-14 rounded-2xl bg-engineering-blue-light flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-[28px] text-primary">cloud_upload</span>
+          </div>
+          <p class="font-headline-md text-base text-on-surface mb-2">Drop PDF here</p>
+          <p class="font-body-sm text-on-surface-variant text-center mb-4 text-sm">Global rulebook for all users</p>
+          <button class="bg-primary text-on-primary font-bold px-6 py-2.5 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 text-xs font-label-caps">
+            <span class="material-symbols-outlined text-sm">folder_open</span> Browse Files
+          </button>
+        </div>
+
+        <input accept=".pdf" class="hidden" id="adminFileInput" type="file" onchange="handleAdminFile()"/>
+
+        <!-- FILE SELECTED -->
+        <div id="adminFileSelected" class="hidden mt-4 flex items-center gap-3 p-3 bg-engineering-blue-light border border-primary/20 rounded-xl fade-in">
+          <span class="material-symbols-outlined text-primary text-sm">picture_as_pdf</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-body-sm font-bold text-on-surface truncate" id="adminFileName">file.pdf</p>
+            <p class="font-code-snippet text-xs text-on-surface-variant" id="adminFileSize"></p>
+          </div>
+          <button onclick="removeAdminFile()" class="text-on-surface-variant hover:text-red-500 transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+
+        <!-- PROGRESS -->
+        <div id="adminProgressWrap" class="hidden mt-4">
+          <div class="flex justify-between mb-1">
+            <span class="font-label-caps text-[10px] text-on-surface-variant">Uploading global rulebook...</span>
+            <span class="font-label-caps text-[10px] text-primary" id="adminProgressPct">0%</span>
+          </div>
+          <div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+            <div class="bg-primary h-full rounded-full transition-all" id="adminProgressFill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- SUCCESS / ERROR -->
+        <div id="adminSuccessBox" class="hidden mt-4 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl fade-in">
+          <span class="material-symbols-outlined text-green-600 text-sm">check_circle</span>
+          <p class="font-body-sm text-green-700 text-sm" id="adminSuccessText">Uploaded!</p>
+        </div>
+        <div id="adminErrorBox" class="hidden mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <span class="material-symbols-outlined text-red-500 text-sm">error</span>
+          <p class="font-body-sm text-red-600 text-sm" id="adminErrorText">Upload failed!</p>
+        </div>
+
+        <!-- UPLOAD BUTTON -->
+        <button id="adminUploadBtn" onclick="handleAdminUpload()"
+          class="hidden mt-4 w-full bg-primary text-on-primary py-3 rounded-xl font-bold font-label-caps text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">upload</span> Upload as Global Rulebook
+        </button>
+
+        <div class="mt-4 flex items-center gap-2 pt-4 border-t border-outline-variant">
+          <span class="material-symbols-outlined text-safety-orange text-sm">info</span>
+          <p class="font-label-caps text-[10px] text-on-surface-variant">Global rulebook loads automatically for all users</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: USERS + CHATS TABLE -->
+    <section class="col-span-12 lg:col-span-7 flex flex-col gap-6">
+
+      <!-- TABS -->
+      <div class="flex gap-1 p-1 bg-cad-gray rounded-xl border border-outline-variant w-fit">
+        <button id="tabUsersBtn" onclick="showTab('users')" class="tab-active px-5 py-2 rounded-lg font-label-caps text-xs transition-all">
+          👥 Users
+        </button>
+        <button id="tabChatsBtn" onclick="showTab('chats')" class="px-5 py-2 rounded-lg font-label-caps text-xs text-on-surface-variant transition-all hover:bg-surface-container">
+          💬 Chat History
+        </button>
+      </div>
+
+      <!-- USERS TABLE -->
+      <div id="usersTab">
+        <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">group</span>
+              <h3 class="font-headline-md text-base font-bold text-metallic-slate">All Users</h3>
+            </div>
+            <span class="font-label-caps text-[10px] text-on-surface-variant bg-cad-gray px-3 py-1 rounded-full" id="userCount">0 users</span>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low">
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Name</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Email</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Role</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Team</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Joined</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable" class="divide-y divide-outline-variant">
+                <tr><td colspan="5" class="text-center py-10 text-on-surface-variant font-body-sm">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHATS TABLE -->
+      <div id="chatsTab" class="hidden">
+        <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">chat_bubble</span>
+              <h3 class="font-headline-md text-base font-bold text-metallic-slate">All Chat History</h3>
+            </div>
+            <span class="font-label-caps text-[10px] text-on-surface-variant bg-cad-gray px-3 py-1 rounded-full" id="chatCount">0 chats</span>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low">
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">User</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Question</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Answer</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Feedback</th>
+                  <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Time</th>
+                </tr>
+              </thead>
+              <tbody id="chatsTable" class="divide-y divide-outline-variant">
+                <tr><td colspan="5" class="text-center py-10 text-on-surface-variant font-body-sm">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- SYSTEM STATS -->
+  <section class="mt-gutter grid grid-cols-1 md:grid-cols-3 gap-gutter">
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">AI Engine</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">smart_toy</span>
+      </div>
+      <p class="font-headline-md text-sm font-bold text-metallic-slate mb-1">Groq LLaMA 3.3-70B</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+        <span class="font-body-sm text-xs text-on-surface-variant">Operational</span>
+      </div>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Database</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">storage</span>
+      </div>
+      <p class="font-headline-md text-sm font-bold text-metallic-slate mb-1">MySQL Connected</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+        <span class="font-body-sm text-xs text-on-surface-variant">All services running</span>
+      </div>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">System Health</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">analytics</span>
+      </div>
+      <p class="font-headline-md text-sm font-bold text-metallic-slate mb-1">Nominal</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+        <span class="font-body-sm text-xs text-on-surface-variant">All services operational</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const BACKEND_URL = "http://127.0.0.1:8000"
+
+  window.onload = function() {
+    if (localStorage.getItem('is_admin') != 1) {
+      window.location.href = 'login.html'; return;
+    }
+    const name = localStorage.getItem('userName') || 'Admin'
+    document.getElementById('adminAvatar').textContent = name.charAt(0).toUpperCase()
+    loadUsers()
+    loadChats()
+    loadGlobalRulebook()
+  }
+
+  // ── TABS ──
+  function showTab(tab) {
+    document.getElementById('usersTab').classList.toggle('hidden', tab !== 'users')
+    document.getElementById('chatsTab').classList.toggle('hidden', tab !== 'chats')
+    document.getElementById('tabUsersBtn').className = tab === 'users'
+      ? 'tab-active px-5 py-2 rounded-lg font-label-caps text-xs transition-all'
+      : 'px-5 py-2 rounded-lg font-label-caps text-xs text-on-surface-variant transition-all hover:bg-surface-container'
+    document.getElementById('tabChatsBtn').className = tab === 'chats'
+      ? 'tab-active px-5 py-2 rounded-lg font-label-caps text-xs transition-all'
+      : 'px-5 py-2 rounded-lg font-label-caps text-xs text-on-surface-variant transition-all hover:bg-surface-container'
+  }
+
+  // ── LOAD DATA ──
+  function loadUsers() {
+    fetch(`${BACKEND_URL}/admin/users`).then(r => r.json()).then(users => {
+      document.getElementById('totalUsers').textContent = users.length
+      document.getElementById('userCount').textContent = users.length + ' users'
+      document.getElementById('usersTable').innerHTML = users.length === 0
+        ? '<tr><td colspan="5" class="text-center py-10 text-on-surface-variant">No users yet</td></tr>'
+        : users.map(u => `
+          <tr class="hover:bg-engineering-blue-light/20 transition-colors">
+            <td class="px-5 py-3 font-bold text-on-surface text-sm">${u.name}</td>
+            <td class="px-5 py-3 text-on-surface-variant text-sm">${u.email}</td>
+            <td class="px-5 py-3"><span class="px-2 py-0.5 bg-engineering-blue-light text-primary rounded font-label-caps text-[10px]">${u.role}</span></td>
+            <td class="px-5 py-3 text-on-surface-variant text-sm">${u.team}</td>
+            <td class="px-5 py-3 font-code-snippet text-xs text-on-surface-variant">${u.created_at}</td>
+          </tr>`).join('')
+    })
+  }
+
+  function loadChats() {
+    fetch(`${BACKEND_URL}/admin/chats`).then(r => r.json()).then(chats => {
+      document.getElementById('totalChats').textContent = chats.length
+      document.getElementById('chatCount').textContent = chats.length + ' chats'
+      document.getElementById('totalFeedback').textContent = chats.filter(c => c.feedback === 'up').length
+      document.getElementById('chatsTable').innerHTML = chats.length === 0
+        ? '<tr><td colspan="5" class="text-center py-10 text-on-surface-variant">No chats yet</td></tr>'
+        : chats.map(c => `
+          <tr class="hover:bg-engineering-blue-light/20 transition-colors">
+            <td class="px-5 py-3 font-bold text-on-surface text-sm">${c.user_name}</td>
+            <td class="px-5 py-3 text-on-surface-variant text-sm max-w-[160px] truncate">${c.question}</td>
+            <td class="px-5 py-3 text-on-surface-variant text-sm max-w-[200px] truncate">${c.answer.substring(0,80)}...</td>
+            <td class="px-5 py-3"><span class="px-2 py-0.5 rounded font-label-caps text-[10px] ${c.feedback === 'up' ? 'bg-green-100 text-green-700' : c.feedback === 'down' ? 'bg-red-100 text-red-600' : 'bg-cad-gray text-on-surface-variant'}">${c.feedback || '—'}</span></td>
+            <td class="px-5 py-3 font-code-snippet text-xs text-on-surface-variant">${c.created_at}</td>
+          </tr>`).join('')
+    })
+  }
+
+  function loadGlobalRulebook() {
+    // Check if already in memory
+    fetch(`${BACKEND_URL}/rulebook/status`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.filename) {
+        document.getElementById('globalRulebookStatus').classList.remove('hidden')
+        document.getElementById('globalFileName').textContent = data.filename
+      } else {
+        // Not in memory — check DB for saved global rulebook and auto-load it
+        fetch(`${BACKEND_URL}/global-rulebook`)
+        .then(r => r.json())
+        .then(gData => {
+          if (gData.available) {
+            document.getElementById('globalRulebookStatus').classList.remove('hidden')
+            document.getElementById('globalFileName').textContent = gData.filename + ' (loading...)'
+            // Auto-load into memory
+            fetch(`${BACKEND_URL}/load-rulebook`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ filepath: gData.filepath })
+            })
+            .then(r => r.json())
+            .then(() => {
+              document.getElementById('globalFileName').textContent = gData.filename + ' ✅'
+            })
+            .catch(() => {
+              document.getElementById('globalFileName').textContent = gData.filename
+            })
+          }
+        }).catch(() => {})
+      }
+    }).catch(() => {})
+  }
+
+  // ── GLOBAL RULEBOOK UPLOAD ──
+  function handleAdminFile() {
+    const file = document.getElementById('adminFileInput').files[0]
+    if (file) showAdminFile(file)
+  }
+
+  function showAdminFile(file) {
+    document.getElementById('adminFileSelected').classList.remove('hidden')
+    document.getElementById('adminFileName').textContent = file.name
+    document.getElementById('adminFileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB'
+    document.getElementById('adminUploadBtn').classList.remove('hidden')
+    document.getElementById('adminSuccessBox').classList.add('hidden')
+    document.getElementById('adminErrorBox').classList.add('hidden')
+  }
+
+  function removeAdminFile() {
+    document.getElementById('adminFileInput').value = ''
+    document.getElementById('adminFileSelected').classList.add('hidden')
+    document.getElementById('adminUploadBtn').classList.add('hidden')
+  }
+
+  function handleAdminDragOver(e) {
+    e.preventDefault()
+    document.getElementById('adminDropZone').classList.add('drag-active')
+  }
+
+  function handleAdminDragLeave() {
+    document.getElementById('adminDropZone').classList.remove('drag-active')
+  }
+
+  function handleAdminDrop(e) {
+    e.preventDefault()
+    document.getElementById('adminDropZone').classList.remove('drag-active')
+    const file = e.dataTransfer.files[0]
+    if (file && file.type === 'application/pdf') {
+      const dt = new DataTransfer()
+      dt.items.add(file)
+      document.getElementById('adminFileInput').files = dt.files
+      showAdminFile(file)
+    }
+  }
+
+  function handleAdminUpload() {
+    const file = document.getElementById('adminFileInput').files[0]
+    if (!file) return
+
+    const btn = document.getElementById('adminUploadBtn')
+    btn.disabled = true
+    btn.innerHTML = '<span class="material-symbols-outlined text-sm spin">sync</span> Uploading...'
+
+    const progressWrap = document.getElementById('adminProgressWrap')
+    const progressFill = document.getElementById('adminProgressFill')
+    const progressPct  = document.getElementById('adminProgressPct')
+    progressWrap.classList.remove('hidden')
+
+    let progress = 0
+    const interval = setInterval(() => {
+      progress += Math.random() * 15
+      if (progress > 85) progress = 85
+      progressFill.style.width = progress + '%'
+      progressPct.textContent = Math.round(progress) + '%'
+    }, 300)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    fetch(`${BACKEND_URL}/admin/upload-global`, { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      clearInterval(interval)
+      progressFill.style.width = '100%'
+      setTimeout(() => {
+        progressWrap.classList.add('hidden')
+        document.getElementById('adminSuccessBox').classList.remove('hidden')
+        document.getElementById('adminSuccessText').textContent =
+          `✅ Global rulebook uploaded! ${(data.words_extracted || 0).toLocaleString()} words extracted. All users can now chat!`
+        document.getElementById('globalRulebookStatus').classList.remove('hidden')
+        document.getElementById('globalFileName').textContent = file.name
+        btn.classList.add('hidden')
+      }, 400)
+    })
+    .catch(() => {
+      clearInterval(interval)
+      progressWrap.classList.add('hidden')
+      document.getElementById('adminErrorBox').classList.remove('hidden')
+      document.getElementById('adminErrorText').textContent = 'Upload failed! Check backend.'
+      btn.disabled = false
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm">upload</span> Upload as Global Rulebook'
+    })
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
