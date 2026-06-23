@@ -5,3 +5,5 @@ pdfplumber
 mysql-connector-python
 python-dotenv
 requests
+chromadb
+sentence-transformers

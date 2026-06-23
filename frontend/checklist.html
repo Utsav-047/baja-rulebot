@@ -1,162 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Checklist – BAJA RuleBot</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Inter', sans-serif; }
-    body { background: #f8fafc; color: #0f172a; }
-    .navbar { background: rgba(255,255,255,0.95); box-shadow: 0 1px 0 rgba(0,0,0,0.08); padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }
-    .navbar-logo { display: flex; align-items: center; gap: 12px; }
-    .logo-badge { background: #f97316; color: white; font-weight: 800; padding: 6px 12px; border-radius: 8px; font-size: 16px; }
-    .logo-text { font-size: 18px; font-weight: 700; color: #0f172a; }
-    .navbar-links { display: flex; gap: 24px; list-style: none; }
-    .navbar-links a { color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-    .navbar-links a:hover { color: #f97316; }
-
-    /* PAGE */
-    .page-container {
-      min-height: calc(100vh - 60px);
-      background: linear-gradient(135deg, #fff7ed 0%, #f8fafc 50%, #fff7ed 100%);
-      padding: 60px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .page-container h2 { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 8px; text-align: center; }
-    .page-container h2 span { color: #f97316; }
-    .page-container > p { color: #64748b; margin-bottom: 40px; text-align: center; font-size: 15px; }
-
-    /* CATEGORY BUTTONS */
-    .category-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 36px; }
-    .cat-btn {
-      background: white;
-      color: #374151;
-      border: 1.5px solid #e2e8f0;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .cat-btn:hover, .cat-btn.active {
-      background: #f97316;
-      color: white;
-      border-color: #f97316;
-      box-shadow: 0 4px 12px rgba(249,115,22,0.3);
-      transform: translateY(-2px);
-    }
-
-    /* CHECKLIST BOX */
-    .checklist-box {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 24px;
-      padding: 36px;
-      width: 100%;
-      max-width: 800px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    }
-
-    .checklist-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      transition: background 0.2s;
-    }
-    .checklist-item:hover { background: #fff7ed; border-color: #fed7aa; }
-    .checklist-item input[type="checkbox"] { margin-top: 3px; accent-color: #f97316; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
-    .checklist-item span { color: #374151; font-size: 14px; line-height: 1.6; }
-
-    .checklist-title { font-size: 18px; font-weight: 700; color: #f97316; margin-bottom: 20px; }
-    .empty-msg { color: #94a3b8; text-align: center; padding: 40px 0; font-size: 14px; }
-    .loading-msg { color: #f97316; text-align: center; padding: 40px 0; font-size: 14px; }
-  </style>
-</head>
-<body>
-
-  <nav class="navbar">
-    <div class="navbar-logo">
-      <div class="logo-badge">BAJA</div>
-      <span class="logo-text">RuleBot</span>
-    </div>
-    <ul class="navbar-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="upload.html">Upload Rulebook</a></li>
-      <li><a href="chat.html">Chat</a></li>
-      <li><a href="checklist.html">Checklist</a></li>
-    </ul>
-  </nav>
-
-  <div class="page-container">
-    <h2>Generate <span>Checklist</span></h2>
-    <p>Select a category to generate a compliance checklist from the rulebook</p>
-
-    <div class="category-row">
-      <button class="cat-btn" onclick="generateChecklist('technical inspection', this)">🔧 Technical Inspection</button>
-      <button class="cat-btn" onclick="generateChecklist('billing and documents', this)">📄 Billing & Documents</button>
-      <button class="cat-btn" onclick="generateChecklist('driver safety equipment', this)">🪖 Driver Safety</button>
-      <button class="cat-btn" onclick="generateChecklist('static events', this)">🏆 Static Events</button>
-      <button class="cat-btn" onclick="generateChecklist('electrical safety', this)">⚡ Electrical Safety</button>
-    </div>
-
-    <div class="checklist-box">
-      <div id="checklistOutput">
-        <p class="empty-msg">📋 Click a category above to generate checklist</p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const BACKEND_URL = "http://127.0.0.1:8000"
-
-    function generateChecklist(category, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'))
-      btn.classList.add('active')
-
-      const output = document.getElementById('checklistOutput')
-      output.innerHTML = '<p class="loading-msg">⏳ Generating checklist...</p>'
-
-      fetch(`${BACKEND_URL}/chat`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: `Generate a detailed compliance checklist for ${category} based on the rulebook. Format it as a numbered list of items to check.`,
-          role: 'Team Member'
-        })
-      })
-      .then(r => r.json())
-      .then(data => {
-        const items = (data.answer || data.error).split('\n').filter(l => l.trim())
-        let html = `<div class="checklist-title">✅ ${category.toUpperCase()} CHECKLIST</div>`
-        items.forEach(item => {
-          if (item.trim()) {
-            html += `<div class="checklist-item">
-              <input type="checkbox">
-              <span>${item}</span>
-            </div>`
-          }
-        })
-        output.innerHTML = html
-      })
-      .catch(() => {
-        output.innerHTML = '<p style="color:#ef4444; text-align:center; padding:40px 0;">❌ Error! Please upload rulebook first.</p>'
-      })
-    }
-  </script>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
@@ -249,10 +90,6 @@
     <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="upload.html">
       <span class="material-symbols-outlined">upload_file</span>
       <span class="font-label-caps text-xs uppercase">Upload</span>
-    </a>
-    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" href="admin.html">
-      <span class="material-symbols-outlined">settings_applications</span>
-      <span class="font-label-caps text-xs uppercase">Admin</span>
     </a>
   </nav>
   <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
@@ -363,6 +200,9 @@
                 </div>
               </div>
               <div class="flex items-center gap-2">
+                <button onclick="regenerateChecklist()" class="flex items-center gap-1 px-3 py-1.5 text-on-surface-variant border border-outline-variant rounded-lg font-label-caps text-xs hover:bg-surface-container transition-colors">
+                  <span class="material-symbols-outlined text-sm">autorenew</span> Regenerate
+                </button>
                 <button onclick="resetChecklist()" class="flex items-center gap-1 px-3 py-1.5 text-on-surface-variant border border-outline-variant rounded-lg font-label-caps text-xs hover:bg-surface-container transition-colors">
                   <span class="material-symbols-outlined text-sm">refresh</span> Reset
                 </button>
@@ -467,11 +307,14 @@
 <script>
   const BACKEND_URL = "http://127.0.0.1:8000"
   let currentCategory = ''
+  let currentItems = []
   let totalItems = 0
+  let currentUserId = 0
 
   window.onload = function() {
     const name = localStorage.getItem('userName') || 'User'
     const team = localStorage.getItem('teamName') || 'Team'
+    currentUserId = parseInt(localStorage.getItem('user_id')) || 0
     document.getElementById('sidebarName').textContent = name
     document.getElementById('sidebarTeam').textContent = team
     document.getElementById('headerAvatar').textContent = name.charAt(0).toUpperCase()
@@ -498,19 +341,65 @@
     document.getElementById('loadingState').classList.remove('hidden')
     document.getElementById('checklistContent').classList.add('hidden')
 
-    fetch(`${BACKEND_URL}/chat`, {
+    if (currentUserId <= 0) {
+      // Not logged in — no persistence possible, generate fresh
+      generateFromAI(category)
+      return
+    }
+
+    // Try to load a previously saved checklist (with progress) first
+    fetch(`${BACKEND_URL}/checklist/${currentUserId}/${encodeURIComponent(category)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.found && Array.isArray(data.items) && data.items.length > 0) {
+        currentItems = data.items
+        renderChecklist(category, currentItems, true)
+      } else {
+        generateFromAI(category)
+      }
+    })
+    .catch(() => generateFromAI(category))
+  }
+
+  function generateFromAI(category) {
+    document.getElementById('emptyState').classList.add('hidden')
+    document.getElementById('loadingState').classList.remove('hidden')
+    document.getElementById('checklistContent').classList.add('hidden')
+
+    fetch(`${BACKEND_URL}/checklist/generate`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        question: `Generate a detailed compliance checklist for ${category} based on the rulebook. Format it as a numbered list of items to check. Each item should be on a new line.`,
+        category: category,
         role: localStorage.getItem('userRole') || 'Team Member'
       })
     })
     .then(r => r.json())
     .then(data => {
-      const answer = data.answer || data.error
-      const items = answer.split('\n').filter(l => l.trim() && l.trim().length > 3)
-      renderChecklist(category, items)
+      const answer = data.items || data.error || ''
+      currentItems = answer.split('\n')
+        .map(l => l.trim())
+        .filter(l => {
+          if (!l || l.length < 3) return false
+          // Drop markdown headers, separators, and reference/notes lines
+          if (/^#{1,6}\s/.test(l)) return false
+          if (/^-{3,}$/.test(l)) return false
+          if (/^📌/.test(l)) return false
+          if (/^(reference|key notes?|notes?)\s*:?/i.test(l)) return false
+          return true
+        })
+        .map(l => ({
+          // Strip leading "1. " / "1) " numbering and stray markdown bold/backticks
+          text: l.replace(/^\d+[\.\)]\s*/, '')
+                 .replace(/\*\*/g, '')
+                 .replace(/`/g, '')
+                 .trim(),
+          checked: false
+        }))
+        .filter(item => item.text.length > 0)
+
+      renderChecklist(category, currentItems, false)
+      saveChecklist()
     })
     .catch(() => {
       document.getElementById('loadingState').classList.add('hidden')
@@ -524,7 +413,14 @@
     })
   }
 
-  function renderChecklist(category, items) {
+  function regenerateChecklist() {
+    if (!currentCategory) return
+    document.getElementById('checklistContent').classList.add('hidden')
+    document.getElementById('loadingState').classList.remove('hidden')
+    generateFromAI(currentCategory)
+  }
+
+  function renderChecklist(category, items, fromSaved) {
     totalItems = items.length
     document.getElementById('loadingState').classList.add('hidden')
     document.getElementById('checklistContent').classList.remove('hidden')
@@ -533,29 +429,33 @@
     const icon = categoryIcons[category] || 'checklist'
     document.getElementById('checklistIcon').textContent = icon
     document.getElementById('checklistTitle').textContent = category.toUpperCase() + ' CHECKLIST'
-    document.getElementById('checklistMeta').textContent = `${items.length} compliance items`
+    document.getElementById('checklistMeta').textContent = `${items.length} compliance items${fromSaved ? ' • Resumed from saved progress' : ''}`
 
+    const completed = items.filter(i => i.checked).length
     document.getElementById('statTotal').textContent = items.length
-    document.getElementById('statCompleted').textContent = 0
-    document.getElementById('statRemaining').textContent = items.length
-    updateProgress()
+    document.getElementById('statCompleted').textContent = completed
+    document.getElementById('statRemaining').textContent = items.length - completed
 
     const container = document.getElementById('checklistItems')
     container.innerHTML = items.map((item, i) => `
-      <div class="group flex items-start gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary/30 hover:bg-engineering-blue-light/30 transition-all" id="item-${i}">
-        <input type="checkbox" id="cb-${i}" onchange="toggleItem(${i})"
+      <div class="group flex items-start gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary/30 hover:bg-engineering-blue-light/30 transition-all ${item.checked ? 'opacity-60' : ''}" id="item-${i}">
+        <input type="checkbox" id="cb-${i}" ${item.checked ? 'checked' : ''} onchange="toggleItem(${i})"
           class="mt-0.5 w-4 h-4 accent-primary cursor-pointer flex-shrink-0 rounded"/>
-        <label for="cb-${i}" class="font-body-sm text-on-surface leading-relaxed cursor-pointer flex-1" id="label-${i}">
-          ${item.replace(/^\d+[\.\)]\s*/, '')}
+        <label for="cb-${i}" class="font-body-sm text-on-surface leading-relaxed cursor-pointer flex-1 ${item.checked ? 'line-through text-on-surface-variant/50' : ''}" id="label-${i}">
+          ${item.text}
         </label>
         <span class="material-symbols-outlined text-sm text-on-surface-variant/30 group-hover:text-primary/40 transition-colors flex-shrink-0">check_circle</span>
       </div>`).join('')
+
+    updateProgress()
   }
 
   function toggleItem(index) {
     const cb = document.getElementById(`cb-${index}`)
     const label = document.getElementById(`label-${index}`)
     const item = document.getElementById(`item-${index}`)
+
+    currentItems[index].checked = cb.checked
 
     if (cb.checked) {
       label.classList.add('line-through', 'text-on-surface-variant/50')
@@ -565,6 +465,20 @@
       item.classList.remove('opacity-60')
     }
     updateProgress()
+    saveChecklist()
+  }
+
+  function saveChecklist() {
+    if (currentUserId <= 0 || !currentCategory) return
+    fetch(`${BACKEND_URL}/checklist/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: currentUserId,
+        category: currentCategory,
+        items: currentItems
+      })
+    }).catch(() => {})
   }
 
   function updateProgress() {
@@ -580,6 +494,7 @@
   }
 
   function resetChecklist() {
+    currentItems.forEach(item => item.checked = false)
     document.querySelectorAll('[id^="cb-"]').forEach((cb, i) => {
       cb.checked = false
       const label = document.getElementById(`label-${i}`)
@@ -588,15 +503,12 @@
       if (item) item.classList.remove('opacity-60')
     })
     updateProgress()
+    saveChecklist()
   }
 
   function exportChecklist() {
-    const items = [...document.querySelectorAll('[id^="label-"]')]
-      .map((l, i) => {
-        const cb = document.getElementById(`cb-${i}`)
-        return `[${cb.checked ? 'X' : ' '}] ${l.textContent.trim()}`
-      }).join('\n')
-    const text = `BAJA RuleBot - ${currentCategory.toUpperCase()} CHECKLIST\n${'='.repeat(50)}\n\n${items}`
+    const text = `BAJA RuleBot - ${currentCategory.toUpperCase()} CHECKLIST\n${'='.repeat(50)}\n\n` +
+      currentItems.map(item => `[${item.checked ? 'X' : ' '}] ${item.text}`).join('\n')
     const blob = new Blob([text], {type:'text/plain'})
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)

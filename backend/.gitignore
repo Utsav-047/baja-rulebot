@@ -5,3 +5,26 @@ backend/.env
 backend/venv/
 backend/__pycache__/
 backend/*.pdf
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# Environment variables
+.env
+
+# Database / vector DB
+*.db
+chroma_db/
+
+# Uploads
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db

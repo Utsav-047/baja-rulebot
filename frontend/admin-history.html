@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BAJA RuleBot - Chat History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme: { extend: {
+      colors: {
+        "outline-variant":"#c2c6d4","on-surface":"#0b1c30","surface-container-low":"#eff4ff",
+        "outline":"#727783","surface-container-high":"#dce9ff","on-surface-variant":"#424752",
+        "engineering-blue-light":"#EAEEFB","on-primary":"#ffffff","on-background":"#0b1c30",
+        "metallic-slate":"#1E293B","safety-orange":"#F57C00","surface-container":"#e5eeff",
+        "surface-bright":"#f8f9ff","primary-fixed":"#d6e3ff","surface":"#f8f9ff",
+        "primary":"#004183","background":"#f8f9ff","surface-container-highest":"#d3e4fe",
+        "error":"#ba1a1a","racing-yellow":"#FFD600","primary-container":"#0058ae",
+        "secondary":"#2850cf","cad-gray":"#F1F5F9","surface-container-lowest":"#ffffff",
+        "on-primary-container":"#bad1ff","surface-dim":"#cbdbf5"
+      },
+      borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},
+      spacing:{"gutter":"24px","base":"8px","margin-mobile":"16px","margin-desktop":"48px"},
+      fontFamily:{
+        "headline-lg":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],
+        "body-lg":["Inter"],"code-snippet":["JetBrains Mono"],"body-md":["Inter"],
+        "body-sm":["Inter"],"headline-md":["Hanken Grotesk"],"label-caps":["JetBrains Mono"]
+      },
+      fontSize:{
+        "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],
+        "headline-xl":["40px",{"lineHeight":"48px","letterSpacing":"-0.02em","fontWeight":"800"}],
+        "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "code-snippet":["13px",{"lineHeight":"20px","fontWeight":"400"}],
+        "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+        "label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}]
+      }
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; }
+  .sidebar-active { background-color:#004183; color:white; font-weight:700; }
+  .custom-scrollbar::-webkit-scrollbar { width:4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:2px; }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeInUp 0.3s ease forwards; }
+  .chev { transition: transform 0.2s ease; }
+  .rotated { transform: rotate(180deg); }
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+
+<!-- SIDEBAR -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant flex flex-col p-base gap-gutter z-50">
+  <div class="px-2 py-4">
+    <h1 class="font-headline-md text-headline-md font-black text-primary">BAJA RuleBot</h1>
+    <p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Admin Panel</p>
+  </div>
+  <button onclick="window.location.href='chat.html'" class="bg-primary text-on-primary rounded-xl font-bold p-3 flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm mb-2">
+    <span class="material-symbols-outlined">add</span>
+    <span class="font-label-caps text-xs">New Rule Check</span>
+  </button>
+  <nav class="flex flex-col gap-1">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="admin.html">
+      <span class="material-symbols-outlined">settings_applications</span>
+      <span class="font-label-caps text-xs">Admin</span>
+    </a>
+    <a class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl" href="admin-history.html">
+      <span class="material-symbols-outlined">history</span>
+      <span class="font-label-caps text-xs">History</span>
+    </a>
+  </nav>
+  <div class="mt-auto flex flex-col gap-1 border-t border-outline-variant pt-4">
+    <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-engineering-blue-light hover:text-primary rounded-xl transition-all" href="index.html">
+      <span class="material-symbols-outlined">home</span>
+      <span class="font-label-caps text-xs">Home</span>
+    </a>
+    <a onclick="logout()" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-red-50 hover:text-red-500 rounded-xl transition-all cursor-pointer">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="font-label-caps text-xs">Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="ml-64 min-h-screen p-margin-desktop bg-surface-bright">
+
+  <!-- HEADER -->
+  <header class="mb-10">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <div class="inline-block h-1 w-12 bg-primary mb-4"></div>
+        <h2 class="font-headline-xl text-headline-xl text-primary mb-2">Chat History</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">All user conversations grouped by user, with individual feedback attribution.</p>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold" id="adminAvatar">A</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="grid grid-cols-4 gap-gutter mb-10">
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Total Chats</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">chat_bubble</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="statTotalChats">0</p>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Positive Feedback</span>
+        <span class="material-symbols-outlined text-green-600 bg-green-50 p-2 rounded-lg">thumb_up</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="statPositive">0</p>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">Negative Feedback</span>
+        <span class="material-symbols-outlined text-red-500 bg-red-50 p-2 rounded-lg">thumb_down</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="statNegative">0</p>
+    </div>
+    <div class="bg-white border border-outline-variant p-6 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-3">
+        <span class="font-label-caps text-xs text-on-surface-variant uppercase">No Feedback</span>
+        <span class="material-symbols-outlined text-primary bg-engineering-blue-light p-2 rounded-lg">help</span>
+      </div>
+      <p class="font-headline-md text-headline-md text-metallic-slate" id="statNone">0</p>
+    </div>
+  </div>
+
+  <!-- FEEDBACK BY USER SUMMARY -->
+  <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm mb-8">
+    <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-sm">groups</span>
+        <h3 class="font-headline-md text-base font-bold text-metallic-slate">Feedback by User</h3>
+      </div>
+      <input id="userFilter" oninput="renderUsers()" placeholder="Filter by name..."
+        class="text-xs px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-low outline-none focus:border-primary w-48"/>
+    </div>
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low">
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">User</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Role / Team</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">Total Chats</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">👍 Positive</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">👎 Negative</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase">No Feedback</th>
+            <th class="px-5 py-3 font-label-caps text-[10px] text-on-surface-variant border-b border-outline-variant uppercase"></th>
+          </tr>
+        </thead>
+        <tbody id="summaryTable" class="divide-y divide-outline-variant">
+          <tr><td colspan="7" class="text-center py-10 text-on-surface-variant font-body-sm">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PER-USER DETAIL SECTIONS -->
+  <div id="userDetails" class="flex flex-col gap-4"></div>
+
+</main>
+
+<script>
+  const BACKEND_URL = "http://127.0.0.1:8000"
+  let allChats = []
+  let userGroups = []
+
+  window.onload = function() {
+    if (localStorage.getItem('is_admin') != 1) {
+      window.location.href = 'login.html'; return;
+    }
+    const name = localStorage.getItem('userName') || 'Admin'
+    document.getElementById('adminAvatar').textContent = name.charAt(0).toUpperCase()
+    loadChats()
+  }
+
+  function loadChats() {
+    fetch(`${BACKEND_URL}/admin/chats`).then(r => r.json()).then(chats => {
+      allChats = chats
+
+      // Overall stats
+      document.getElementById('statTotalChats').textContent = chats.length
+      document.getElementById('statPositive').textContent = chats.filter(c => c.feedback === 'up').length
+      document.getElementById('statNegative').textContent = chats.filter(c => c.feedback === 'down').length
+      document.getElementById('statNone').textContent = chats.filter(c => !c.feedback).length
+
+      // Group by user
+      const groups = {}
+      chats.forEach(c => {
+        if (!groups[c.user_id]) {
+          groups[c.user_id] = {
+            user_id: c.user_id,
+            name: c.user_name,
+            email: c.user_email,
+            role: c.user_role,
+            team: c.user_team,
+            chats: []
+          }
+        }
+        groups[c.user_id].chats.push(c)
+      })
+      userGroups = Object.values(groups).sort((a, b) => b.chats.length - a.chats.length)
+
+      renderUsers()
+    }).catch(() => {
+      document.getElementById('summaryTable').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-500">Failed to load chat history.</td></tr>'
+    })
+  }
+
+  function renderUsers() {
+    const filter = (document.getElementById('userFilter').value || '').toLowerCase()
+    const filtered = userGroups.filter(g => g.name.toLowerCase().includes(filter))
+
+    if (filtered.length === 0) {
+      document.getElementById('summaryTable').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-on-surface-variant">No users found</td></tr>'
+      document.getElementById('userDetails').innerHTML = ''
+      return
+    }
+
+    // Summary rows
+    document.getElementById('summaryTable').innerHTML = filtered.map(g => {
+      const positive = g.chats.filter(c => c.feedback === 'up').length
+      const negative = g.chats.filter(c => c.feedback === 'down').length
+      const none = g.chats.filter(c => !c.feedback).length
+      return `
+        <tr class="hover:bg-engineering-blue-light/20 transition-colors cursor-pointer" onclick="toggleUser(${g.user_id})">
+          <td class="px-5 py-3 font-bold text-on-surface text-sm">${g.name}</td>
+          <td class="px-5 py-3 text-on-surface-variant text-sm">
+            <span class="px-2 py-0.5 bg-engineering-blue-light text-primary rounded font-label-caps text-[10px]">${g.role}</span>
+            <span class="ml-1">${g.team}</span>
+          </td>
+          <td class="px-5 py-3 text-on-surface text-sm font-bold">${g.chats.length}</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 rounded font-label-caps text-[10px] bg-green-100 text-green-700">${positive}</span></td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 rounded font-label-caps text-[10px] bg-red-100 text-red-600">${negative}</span></td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 rounded font-label-caps text-[10px] bg-cad-gray text-on-surface-variant">${none}</span></td>
+          <td class="px-5 py-3 text-right">
+            <span class="material-symbols-outlined chev text-on-surface-variant" id="chev-${g.user_id}">expand_more</span>
+          </td>
+        </tr>`
+    }).join('')
+
+    // Detail sections
+    document.getElementById('userDetails').innerHTML = filtered.map(g => `
+      <div id="detail-${g.user_id}" class="hidden bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm fade-in">
+        <div class="p-5 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-sm">${g.name.charAt(0).toUpperCase()}</div>
+            <div>
+              <p class="font-bold text-on-surface text-sm">${g.name}</p>
+              <p class="font-code-snippet text-xs text-on-surface-variant">${g.email}</p>
+            </div>
+          </div>
+          <span class="font-label-caps text-[10px] text-on-surface-variant bg-cad-gray px-3 py-1 rounded-full">${g.chats.length} chats</span>
+        </div>
+        <div class="divide-y divide-outline-variant">
+          ${g.chats.map(c => `
+            <div class="p-5">
+              <div class="flex justify-between items-start gap-4 mb-2">
+                <p class="font-bold text-on-surface text-sm flex-1">${c.question}</p>
+                <span class="px-2 py-0.5 rounded font-label-caps text-[10px] flex-shrink-0 ${c.feedback === 'up' ? 'bg-green-100 text-green-700' : c.feedback === 'down' ? 'bg-red-100 text-red-600' : 'bg-cad-gray text-on-surface-variant'}">
+                  ${c.feedback === 'up' ? '👍 Helpful' : c.feedback === 'down' ? '👎 Not Helpful' : '— No feedback'}
+                </span>
+              </div>
+              <p class="text-on-surface-variant text-sm leading-relaxed mb-2">${c.answer.substring(0, 280)}${c.answer.length > 280 ? '...' : ''}</p>
+              <p class="font-code-snippet text-xs text-on-surface-variant">${c.created_at}</p>
+            </div>`).join('')}
+        </div>
+      </div>`).join('')
+  }
+
+  function toggleUser(userId) {
+    const detail = document.getElementById(`detail-${userId}`)
+    const chev = document.getElementById(`chev-${userId}`)
+    detail.classList.toggle('hidden')
+    chev.classList.toggle('rotated')
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>

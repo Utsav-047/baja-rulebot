@@ -53,6 +53,17 @@
   .fade-in { animation: fadeInUp 0.5s ease forwards; }
   .tab-active { background:#004183 !important; color:white !important; }
   input:focus { outline:none; border-color:#004183 !important; box-shadow:0 0 0 3px rgba(0,65,131,0.1); }
+
+.tab-row{display:flex;gap:8px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:12px;border:none;border-radius:10px;background:#e2e8f0;cursor:pointer;font-weight:600;transition:.3s;}
+.tab-btn.active{background:#004183;color:white;}
+.field{margin-bottom:16px;}
+.field label{display:block;margin-bottom:6px;font-size:14px;font-weight:600;}
+.field input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;}
+.btn-submit{width:100%;padding:12px;background:#004183;color:white;border:none;border-radius:8px;cursor:pointer;}
+.error-msg{color:#dc2626;margin-top:10px;}
+.success-msg-text{color:#16a34a;margin-top:10px;}
+
 </style>
 </head>
 <body class="bg-surface-container-low text-on-surface min-h-screen flex overflow-hidden">
@@ -135,7 +146,7 @@
     </div>
 
     <!-- TABS -->
-    <div class="flex gap-1 p-1 bg-cad-gray rounded-xl mb-8 border border-outline-variant">
+    <!-- <div class="flex gap-1 p-1 bg-cad-gray rounded-xl mb-8 border border-outline-variant">
       <button id="tabLoginBtn" onclick="showLogin()"
         class="tab-active flex-1 py-2.5 rounded-lg font-label-caps text-xs transition-all">
         Login
@@ -144,7 +155,11 @@
         class="flex-1 py-2.5 rounded-lg font-label-caps text-xs text-on-surface-variant transition-all hover:bg-surface-container">
         Register
       </button>
-    </div>
+    </div> -->
+    <div class="tab-row">
+  <button class="tab-btn active" id="tabLogin" onclick="showLogin()">🔑 Login</button>
+  <button class="tab-btn" id="tabRegister" onclick="showRegister()">📝 Register</button>
+</div>
 
     <!-- ───── LOGIN FORM ───── -->
     <div id="loginForm">
@@ -197,6 +212,11 @@
       <p class="text-center font-body-sm text-on-surface-variant text-sm">
         Don't have an account?
         <button onclick="showRegister()" class="text-primary font-bold hover:underline ml-1">Register here</button>
+      </p>
+
+      <p class="text-center font-body-sm text-on-surface-variant text-sm mt-2">
+        Forgot password?
+        <button onclick="showForgot()" class="text-primary font-bold hover:underline ml-1">Reset here</button>
       </p>
     </div>
 
@@ -312,6 +332,52 @@
       </p>
     </div>
 
+    
+<!-- FORGOT PASSWORD FORM -->
+<div id="forgotForm" style="display:none;">
+
+  <div id="step1">
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="forgotEmail" placeholder="Enter your registered email"/>
+    </div>
+    <button class="btn-submit" onclick="sendOTP()">Send OTP →</button>
+    <p class="error-msg" id="forgotError"></p>
+    <p class="success-msg-text" id="forgotSuccess"></p>
+  </div>
+
+  <div id="step2" style="display:none;">
+    <p style="color:#64748b;font-size:13px;margin-bottom:16px;background:#eff4ff;padding:10px;border-radius:8px;">
+      📧 OTP sent to your email. Check inbox!
+    </p>
+    <div class="field">
+      <label>Enter OTP</label>
+      <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6"
+      style="letter-spacing:8px;font-size:20px;text-align:center;font-weight:700;"/>
+    </div>
+    <button class="btn-submit" onclick="verifyOTP()">Verify OTP →</button>
+    <p class="error-msg" id="otpError"></p>
+  </div>
+
+  <div id="step3" style="display:none;">
+    <p style="color:#16a34a;font-size:13px;margin-bottom:16px;background:#f0fdf4;padding:10px;border-radius:8px;">
+      ✅ OTP Verified! Set your new password.
+    </p>
+    <div class="field">
+      <label>New Password</label>
+      <input type="password" id="newPassword" placeholder="Enter new password"/>
+    </div>
+    <div class="field">
+      <label>Confirm Password</label>
+      <input type="password" id="confirmPassword" placeholder="Confirm new password"/>
+    </div>
+    <button class="btn-submit" onclick="resetPassword()">Reset Password →</button>
+    <p class="error-msg" id="resetError"></p>
+    <p class="success-msg-text" id="resetSuccess"></p>
+  </div>
+</div>
+
+
     <p class="text-center font-label-caps text-[10px] text-on-surface-variant/50 mt-8">
       © 2026 Esparse Matrix Solutions · BAJA RuleBot
     </p>
@@ -360,22 +426,47 @@
   })
 
   // ── Tab switching ──
-  function showLogin() {
-    document.getElementById('loginForm').classList.remove('hidden')
-    document.getElementById('registerForm').classList.add('hidden')
-    document.getElementById('tabLoginBtn').classList.add('tab-active')
-    document.getElementById('tabRegisterBtn').classList.remove('tab-active')
-    document.getElementById('tabRegisterBtn').classList.add('text-on-surface-variant')
-  }
+  // function showLogin() {
+  //   document.getElementById('loginForm').classList.remove('hidden')
+  //   document.getElementById('registerForm').classList.add('hidden')
+  //   document.getElementById('tabLoginBtn').classList.add('tab-active')
+  //   document.getElementById('tabRegisterBtn').classList.remove('tab-active')
+  //   document.getElementById('tabRegisterBtn').classList.add('text-on-surface-variant')
+  // }
 
-  function showRegister() {
-    document.getElementById('loginForm').classList.add('hidden')
-    document.getElementById('registerForm').classList.remove('hidden')
-    document.getElementById('tabRegisterBtn').classList.add('tab-active')
-    document.getElementById('tabLoginBtn').classList.remove('tab-active')
-    document.getElementById('tabLoginBtn').classList.add('text-on-surface-variant')
-  }
+  // function showRegister() {
+  //   document.getElementById('loginForm').classList.add('hidden')
+  //   document.getElementById('registerForm').classList.remove('hidden')
+  //   document.getElementById('tabRegisterBtn').classList.add('tab-active')
+  //   document.getElementById('tabLoginBtn').classList.remove('tab-active')
+  //   document.getElementById('tabLoginBtn').classList.add('text-on-surface-variant')
+  // }
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block'
+  document.getElementById('registerForm').style.display = 'none'
+  document.getElementById('forgotForm').style.display = 'none'
 
+  document.getElementById('tabLogin').classList.add('active')
+  document.getElementById('tabRegister').classList.remove('active')
+}
+
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none'
+  document.getElementById('registerForm').style.display = 'block'
+  document.getElementById('forgotForm').style.display = 'none'
+
+  document.getElementById('tabLogin').classList.remove('active')
+  document.getElementById('tabRegister').classList.add('active')
+}
+
+function showForgot() {
+  document.getElementById('loginForm').style.display = 'none'
+  document.getElementById('registerForm').style.display = 'none'
+  document.getElementById('forgotForm').style.display = 'block'
+
+  document.getElementById('tabLogin').classList.remove('active')
+  document.getElementById('tabRegister').classList.remove('active')
+}
   // ── Login ──
   function handleLogin() {
     const email    = document.getElementById('loginEmail').value.trim()
@@ -443,6 +534,168 @@
     })
     .catch(() => { errDiv.classList.remove('hidden'); errText.textContent = 'Server error! Try again.'; })
   }
+
+  function showForgot() {
+  document.getElementById('loginForm').style.display = 'none'
+  document.getElementById('registerForm').style.display = 'none'
+  document.getElementById('forgotForm').style.display = 'block'
+  document.getElementById('tabLogin').classList.remove('active')
+  document.getElementById('tabRegister').classList.remove('active')
+  document.getElementById('tabForgot').classList.add('active')
+}
+
+// function sendOTP() {
+//   const email = document.getElementById('forgotEmail').value.trim()
+//   const errEl = document.getElementById('forgotError')
+//   const sucEl = document.getElementById('forgotSuccess')
+
+//   if (!email) {
+//     errEl.style.display = 'block'
+//     errEl.textContent = '⚠️ Please enter your email!'
+//     return
+//   }
+
+//   errEl.style.display = 'none'
+//   sucEl.style.display = 'none'
+
+//   fetch(`${BACKEND_URL}/forgot-password/send-otp`, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ email })
+//   })
+//   .then(res => res.json())
+//   .then(data => {
+//     if (data.error) {
+//       errEl.style.display = 'block'
+//       errEl.textContent = '❌ ' + data.error
+//       return
+//     }
+//     document.getElementById('step1').style.display = 'none'
+//     document.getElementById('step2').style.display = 'block'
+//   })
+//   .catch(() => {
+//     errEl.style.display = 'block'
+//     errEl.textContent = '❌ Server error! Try again.'
+//   })
+// }
+function sendOTP() {
+  const email = document.getElementById('forgotEmail').value.trim()
+  const errEl = document.getElementById('forgotError')
+  const sucEl = document.getElementById('forgotSuccess')
+  const btn = event.target
+
+  if (!email) {
+    errEl.style.display = 'block'
+    errEl.textContent = '⚠️ Please enter your email!'
+    return
+  }
+
+  // Disable button immediately to prevent multiple clicks
+  btn.disabled = true
+  btn.textContent = 'Sending OTP...'
+  errEl.style.display = 'none'
+  sucEl.style.display = 'none'
+
+  fetch(`${BACKEND_URL}/forgot-password/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      errEl.style.display = 'block'
+      errEl.textContent = '❌ ' + data.error
+      // Re-enable button on error
+      btn.disabled = false
+      btn.textContent = 'Send OTP →'
+      return
+    }
+    document.getElementById('step1').style.display = 'none'
+    document.getElementById('step2').style.display = 'block'
+  })
+  .catch(() => {
+    errEl.style.display = 'block'
+    errEl.textContent = '❌ Server error! Try again.'
+    btn.disabled = false
+    btn.textContent = 'Send OTP →'
+  })
+}
+
+function verifyOTP() {
+  const email = document.getElementById('forgotEmail').value.trim()
+  const otp = document.getElementById('otpInput').value.trim()
+  const errEl = document.getElementById('otpError')
+
+  if (!otp || otp.length !== 6) {
+    errEl.style.display = 'block'
+    errEl.textContent = '⚠️ Please enter 6-digit OTP!'
+    return
+  }
+
+  fetch(`${BACKEND_URL}/forgot-password/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      errEl.style.display = 'block'
+      errEl.textContent = '❌ ' + data.error
+      return
+    }
+    document.getElementById('step2').style.display = 'none'
+    document.getElementById('step3').style.display = 'block'
+  })
+  .catch(() => {
+    errEl.style.display = 'block'
+    errEl.textContent = '❌ Server error! Try again.'
+  })
+}
+
+function resetPassword() {
+  const email = document.getElementById('forgotEmail').value.trim()
+  const otp = document.getElementById('otpInput').value.trim()
+  const newPassword = document.getElementById('newPassword').value.trim()
+  const confirmPassword = document.getElementById('confirmPassword').value.trim()
+  const errEl = document.getElementById('resetError')
+  const sucEl = document.getElementById('resetSuccess')
+
+  if (!newPassword || !confirmPassword) {
+    errEl.style.display = 'block'
+    errEl.textContent = '⚠️ Please fill all fields!'
+    return
+  }
+
+  if (newPassword !== confirmPassword) {
+    errEl.style.display = 'block'
+    errEl.textContent = '❌ Passwords do not match!'
+    return
+  }
+
+  fetch(`${BACKEND_URL}/forgot-password/reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp, new_password: newPassword })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      errEl.style.display = 'block'
+      errEl.textContent = '❌ ' + data.error
+      return
+    }
+    sucEl.style.display = 'block'
+    sucEl.textContent = '✅ Password reset successfully! Redirecting to login...'
+    setTimeout(() => showLogin(), 2000)
+  })
+  .catch(() => {
+    errEl.style.display = 'block'
+    errEl.textContent = '❌ Server error! Try again.'
+  })
+}
+
 </script>
 </body>
 </html>
