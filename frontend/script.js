@@ -1,4 +1,4 @@
-// const BACKEND_URL = "http://127.0.0.1:8000"
+// const BACKEND_URL = "https://baja-rulebot-production.up.railway.app"
 
 
 // function formatResponse(text) {
@@ -73,7 +73,7 @@
 //   if (event.key === 'Enter') sendMessage()
 // }
 
-const BACKEND_URL = "http://127.0.0.1:8000"
+const BACKEND_URL = "https://baja-rulebot-production.up.railway.app"
 let currentUserId = 0
 
 window.onload = function() {
