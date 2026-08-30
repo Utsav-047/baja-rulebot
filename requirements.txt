@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pdfplumber
+mysql-connector-python
+python-dotenv
+requests
+chromadb
+sentence-transformers
