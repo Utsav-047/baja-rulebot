@@ -483,14 +483,17 @@ def save_otp(email, otp):
 def verify_otp(email, otp):
     conn = get_connection()
     cursor = conn.cursor()
+    # Only accept OTPs created within the last 10 minutes
     cursor.execute(
-        "SELECT otp FROM password_otp WHERE email = %s ORDER BY created_at DESC LIMIT 1",
+        "SELECT otp FROM password_otp WHERE email = %s "
+        "AND created_at >= NOW() - INTERVAL 10 MINUTE "
+        "ORDER BY created_at DESC LIMIT 1",
         (email,)
     )
     result = cursor.fetchone()
     cursor.close()
     conn.close()
-    if result and str(result[0]).strip() == str(otp).strip():
+    if result and secrets.compare_digest(str(result[0]).strip(), str(otp).strip()):
         return True
     return False
 
