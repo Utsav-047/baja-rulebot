@@ -1,230 +1,5 @@
-
-
-# import requests
-# import os
-# from dotenv import load_dotenv
-# from database import search_chunks
-
-# load_dotenv()
-
-# API_KEY = os.getenv("API_KEY")
-
-# def get_answer(question, rulebook_text, role):
-
-#     question_clean = question.lower().strip()
-
-# greetings = {
-#     "hi", "hii", "hello", "hey",
-#     "good morning", "good evening", "good afternoon"
-# }
-
-# small_talk = {
-#     "thanks": "You're welcome! Ask me anything about BAJA rules 🚗",
-#     "thank you": "You're welcome! Ask me anything about BAJA rules 🚗",
-#     "bye": "Goodbye! Best of luck with BAJA 🚗"
-# }
-
-# if question_clean in greetings:
-#     return "Hi! I'm BAJA RuleBot 👋 Ask me anything about BAJA SAEINDIA rules, vehicle design, compliance, or technical requirements."
-
-# if question_clean in small_talk:
-#     return small_talk[question_clean]
-
-#     # Get relevant chunks from MySQL
-#     relevant_chunks = search_chunks(question)
-
-#     if relevant_chunks:
-#         context = '\n\n'.join(relevant_chunks)
-#     else:
-#         context = rulebook_text[:10000]
-
-#     role_instructions = {
-#         "Team Captain": """
-# - Focus on overall compliance, team coordination and competition readiness
-# - Highlight deadlines, submission requirements and team responsibilities
-# - Mention penalties for non-compliance
-# - Give leadership-oriented actionable points
-# """,
-#         "Faculty Advisor": """
-# - Focus on academic compliance, student eligibility and institutional requirements
-# - Highlight documentation, approval processes and faculty responsibilities
-# - Mention college-level submissions and verifications required
-# - Give guidance-oriented professional points
-# """,
-#         "Finance Manager": """
-# - Focus on billing requirements, invoice documentation and cost report
-# - Highlight original tax invoices, GST requirements and financial submissions
-# - Mention approved vendor lists and purchase documentation
-# - Give finance and documentation oriented points
-# """,
-#         "Department Manager": """
-# - Focus on department-level approvals, resource allocation and oversight
-# - Highlight interdepartmental coordination and management requirements
-# - Mention approval workflows and departmental responsibilities
-# - Give management and coordination oriented points
-# """,
-#         "Team Member": """
-# - Focus on technical requirements, safety rules and vehicle specifications
-# - Highlight specific measurements, materials and construction standards
-# - Mention inspection checklist items and technical compliance points
-# - Give clear technical and practical points
-# """
-#     }
-
-#     # Get role instruction or default to Team Member
-#     role_guide = role_instructions.get(role, role_instructions["Team Member"])
-
-#     prompt = f"""
-# You are BAJA RuleBot, a professional AI technical assistant specialized in
-# BAJA SAEINDIA vehicle competition rules and regulations.
-
-# The user is a {role}. Tailor your answer specifically for their role:
-# {role_guide}
-
-# RELEVANT RULEBOOK SECTIONS:
-# {context}
-
-# QUESTION: {question}
-
-# Provide a comprehensive professional answer in this EXACT format:
-
-# ## [Answer Topic Title]
-
-# ### Overview
-# [Write 2-3 sentences giving a clear overview relevant to {role}]
-
-# ### Detailed Requirements
-
-# **1. [Requirement Title]** `Rule [X.X.X]`
-# [Write 2-3 sentences explaining this requirement specifically for {role}]
-
-# **2. [Requirement Title]** `Rule [X.X.X]`
-# [Write 2-3 sentences explaining this requirement specifically for {role}]
-
-# **3. [Requirement Title]** `Rule [X.X.X]`
-# [Write 2-3 sentences explaining this requirement specifically for {role}]
-
-# [Continue maximum 8 points]
-
-# ### Key Notes for {role}
-# - [Important note specific to {role}]
-# - [Important note specific to {role}]
-# - [Important note specific to {role}]
-
-# ---
-# 📌 **Reference:** BAJA SAEINDIA Rulebook 2026 | Section [X]
-
-# STRICT RULES:
-# - Write rule sections WITHOUT spaces e.g. B.9.1 not B.9. 1
-# - Give detailed explanations tailored to {role}
-# - Include measurements and specifications when available
-# - If not found say: "This requirement was not found in the uploaded rulebook."
-# - Be professional and precise
-# """
-
-#     headers = {
-#         "Authorization": f"Bearer {API_KEY}",
-#         "Content-Type": "application/json"
-#     }
-
-#     data = {
-#         "model": "llama-3.3-70b-versatile",
-#         "messages": [
-#             {"role": "user", "content": prompt}
-#         ]
-#     }
-
-#     try:
-#         response = requests.post(
-#             "https://api.groq.com/openai/v1/chat/completions",
-#             headers=headers,
-#             json=data,
-#             timeout=30
-#         )
-#         result = response.json()
-#         print("Groq response received")
-#         if "choices" in result:
-#             return result["choices"][0]["message"]["content"]
-#         else:
-#             print("Full error:", result)
-#             return "Sorry! AI service error. Please try again."
-#     except Exception as e:
-#         print("Error:", str(e))
-#         return f"Error getting answer: {str(e)}"
-
-
-# def get_checklist_items(category, rulebook_text, role):
-#     """
-#     Generates a clean, flat list of checklist items for the given category.
-#     Unlike get_answer(), this returns ONLY a numbered list with no markdown
-#     headers, overview sections, or notes — suitable for rendering as
-#     individual checkbox items.
-#     """
-
-#     relevant_chunks = search_chunks(category)
-#     if relevant_chunks:
-#         context = '\n\n'.join(relevant_chunks)
-#     else:
-#         context = rulebook_text[:10000]
-
-#     prompt = f"""
-# You are BAJA RuleBot, generating a compliance checklist for BAJA SAEINDIA
-# vehicle competition rules.
-
-# The user is a {role}.
-
-# RELEVANT RULEBOOK SECTIONS:
-# {context}
-
-# Generate a checklist of specific, actionable items for the category: "{category}".
-
-# STRICT OUTPUT RULES — FOLLOW EXACTLY:
-# - Output ONLY a numbered list (1. 2. 3. ...), one item per line.
-# - Each item must be ONE short, specific, actionable checklist point (max 1-2 sentences).
-# - Include the rulebook section number in parentheses where available, e.g. (Rule B.9.1).
-# - Generate between 8 and 15 items.
-# - DO NOT include any markdown symbols such as ##, ###, **, ---, or 📌.
-# - DO NOT include any headings, titles, introductions, overview paragraphs, or notes/reference sections.
-# - DO NOT write anything before item 1 or after the last item.
-# - If no relevant information is found, output exactly one line: "1. No specific requirements found in the uploaded rulebook for this category."
-# """
-
-#     headers = {
-#         "Authorization": f"Bearer {API_KEY}",
-#         "Content-Type": "application/json"
-#     }
-
-#     data = {
-#         "model": "llama-3.3-70b-versatile",
-#         "messages": [
-#             {"role": "user", "content": prompt}
-#         ]
-#     }
-
-#     try:
-#         response = requests.post(
-#             "https://api.groq.com/openai/v1/chat/completions",
-#             headers=headers,
-#             json=data,
-#             timeout=30
-#         )
-#         result = response.json()
-#         print("Groq checklist response received")
-#         if "choices" in result:
-#             return result["choices"][0]["message"]["content"]
-#         else:
-#             print("Full error:", result)
-#             return "1. AI service error. Please try again."
-#     except Exception as e:
-#         print("Error:", str(e))
-#         return f"1. Error generating checklist: {str(e)}"
-
-
-
-
-
-import requests
 import os
+import requests
 from dotenv import load_dotenv
 from database import search_chunks
 
@@ -233,7 +8,10 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
 
-def get_answer(question, rulebook_text, role):
+def get_answer(question: str, rulebook_text: str, role: str) -> str:
+    """
+    Generate an AI compliance answer tailored to the user's role using RAG context.
+    """
     question_clean = question.lower().strip()
 
     # ----------------------------
@@ -261,21 +39,23 @@ def get_answer(question, rulebook_text, role):
         return small_talk[question_clean]
 
     # ----------------------------
-    # Retrieve relevant chunks
+    # Retrieve relevant chunks via Vector / Keyword Search
     # ----------------------------
     relevant_chunks = search_chunks(question)
 
     if relevant_chunks:
         context = "\n\n".join(relevant_chunks)
+    elif rulebook_text:
+        context = rulebook_text[:10000]
     else:
         return (
             "I couldn't find relevant information in the uploaded rulebook.\n"
-            "Please ask a more specific BAJA-related question."
+            "Please ask a more specific BAJA-related question or upload the rulebook PDF."
         )
 
-    snippets = "\n\n---\n📄 Referenced Rulebook Sections:\n" + "\n\n".join(
-        f"[{i+1}] {chunk[:300].strip()}..." for i, chunk in enumerate(relevant_chunks)
-    )
+    snippets = "\n\n---\n📄 **Referenced Rulebook Sections:**\n" + "\n\n".join(
+        f"[{i+1}] {chunk[:250].strip()}..." for i, chunk in enumerate(relevant_chunks)
+    ) if relevant_chunks else ""
 
     # ----------------------------
     # Role-based instructions
@@ -315,26 +95,19 @@ def get_answer(question, rulebook_text, role):
     role_guide = role_instructions.get(role, role_instructions["Team Member"])
 
     # ----------------------------
-    # Prompt
+    # Prompt Construction
     # ----------------------------
     prompt = f"""
 You are BAJA RuleBot, a strict technical AI assistant for BAJA SAEINDIA.
 
 IMPORTANT RULES:
 1. Answer ONLY using retrieved rulebook context.
-2. Never use outside knowledge.
+2. Never use outside knowledge or hallucinate rules.
 3. Never invent rule numbers.
 4. Only cite rule numbers explicitly present in context.
-5. If context is insufficient, say:
-   "This requirement was not found in the uploaded rulebook."
+5. If context is insufficient, say: "This requirement was not found in the uploaded rulebook."
 6. Only include requirements relevant to the question.
 7. Do NOT include unrelated vehicle systems.
-IMPORTANT:
-- NEVER create a requirement unless the exact requirement exists in context.
-- NEVER infer rule numbers.
-- If rule number is missing, write: Rule reference unavailable.
-- Do not guess.
-
 
 The user role is: {role}
 
@@ -352,14 +125,14 @@ Output Format:
 ## [Topic Title]
 
 ### Overview
-2-3 sentences.
+[2-3 sentences providing high level summary for {role}]
 
 ### Detailed Requirements
-1. Requirement Title (Rule X.X.X)
-Explanation
+1. **[Requirement Title]** `(Rule X.X.X)`
+[Explanation]
 
-2. Requirement Title (Rule X.X.X)
-Explanation
+2. **[Requirement Title]** `(Rule X.X.X)`
+[Explanation]
 
 ### Key Notes for {role}
 - Point 1
@@ -370,8 +143,15 @@ Reference:
 BAJA SAEINDIA Rulebook 2026
 """
 
+    api_key = os.getenv("API_KEY") or API_KEY
+    if not api_key:
+        return (
+            "⚠️ **API Key Missing**: The Groq API key is not configured. "
+            "Please add `API_KEY=gsk_...` to your `.env` file to enable AI answers."
+        )
+
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
@@ -379,7 +159,8 @@ BAJA SAEINDIA Rulebook 2026
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "user", "content": prompt}
-        ]
+        ],
+        "temperature": 0.2
     }
 
     try:
@@ -391,45 +172,54 @@ BAJA SAEINDIA Rulebook 2026
         )
 
         result = response.json()
-        print("Groq response received")
-
         if "choices" in result:
             return result["choices"][0]["message"]["content"] + snippets
         else:
-            print(result)
-            return "Sorry! AI service error. Please try again."
+            print("Groq API error response:", result)
+            error_msg = result.get("error", {}).get("message", "AI service error.")
+            return f"⚠️ **AI Service Error:** {error_msg}. Please verify your API key and quota."
 
     except Exception as e:
-        print("Error:", str(e))
-        return f"Error getting answer: {str(e)}"
+        print("Chatbot query exception:", str(e))
+        return f"⚠️ **Error connecting to AI service:** {str(e)}"
 
 
-def get_checklist_items(category, rulebook_text, role):
+def get_checklist_items(category: str, rulebook_text: str, role: str) -> str:
+    """
+    Generate numbered checklist items for technical inspection or event readiness.
+    """
     relevant_chunks = search_chunks(category)
 
     if relevant_chunks:
         context = "\n\n".join(relevant_chunks)
+    elif rulebook_text:
+        context = rulebook_text[:10000]
     else:
         return "1. No specific requirements found in uploaded rulebook."
 
     prompt = f"""
 You are BAJA RuleBot.
 
-Generate checklist for category: {category}
+Generate a technical compliance checklist for category: "{category}".
+User Role: {role}
 
 Context:
 {context}
 
 STRICT RULES:
-- Output ONLY numbered list
-- 8 to 15 points
+- Output ONLY a numbered list (1. 2. 3. ...)
+- 8 to 15 concise actionable points
 - One item per line
-- No headings
+- No markdown headings or conversational intros/outros
 - Include rule references where available
 """
 
+    api_key = os.getenv("API_KEY") or API_KEY
+    if not api_key:
+        return "1. API_KEY is missing in backend configuration."
+
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
@@ -437,7 +227,8 @@ STRICT RULES:
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "user", "content": prompt}
-        ]
+        ],
+        "temperature": 0.2
     }
 
     try:
@@ -449,12 +240,10 @@ STRICT RULES:
         )
 
         result = response.json()
-
         if "choices" in result:
             return result["choices"][0]["message"]["content"]
         else:
-            return "1. AI service error."
+            return "1. AI service error generating checklist. Please try again."
 
     except Exception as e:
         return f"1. Error generating checklist: {str(e)}"
-
