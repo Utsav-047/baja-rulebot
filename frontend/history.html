@@ -5,6 +5,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>BAJA RuleBot - Query History</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script id="tailwind-config">
     tailwind.config = {
@@ -182,7 +183,7 @@
 </main>
 
 <script>
-  const BACKEND_URL = "https://baja-rulebot-production.up.railway.app"
+  const BACKEND_URL = window.BACKEND_URL || "http://127.0.0.1:8000"
   let allChats = []
 
   window.onload = function() {

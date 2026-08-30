@@ -1,128 +1,59 @@
-// const BACKEND_URL = "https://baja-rulebot-production.up.railway.app"
+/**
+ * BAJA RuleBot - Main Interactive Chat Script
+ */
 
-
-// function formatResponse(text) {
-//   // Convert **bold** to <strong>
-//   text = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:white;">$1</strong>')
-  
-//   // Convert numbered list items
-//   text = text.replace(/(\d+)\.\s+/g, '<br><br><span style="color:#f97316; font-weight:bold;">$1.</span> ')
-  
-//   // Convert bullet points
-//   text = text.replace(/\*\s+/g, '<br>• ')
-  
-//   // Convert line breaks
-//   text = text.replace(/\n/g, '<br>')
-  
-//   // Clean up extra breaks at start
-//   text = text.replace(/^(<br>)+/, '')
-  
-//   return text
-// }
-
-// function sendMessage() {
-//   const input = document.getElementById('chatInput')
-//   const messages = document.getElementById('chatMessages')
-//   const role = document.getElementById('roleSelect').value
-//   const text = input.value.trim()
-
-//   if (!text) return
-
-//   // Add user message
-//   const userMsg = document.createElement('div')
-//   userMsg.classList.add('message', 'user')
-//   userMsg.textContent = text
-//   messages.appendChild(userMsg)
-
-//   input.value = ''
-//   messages.scrollTop = messages.scrollHeight
-
-//   // Show loading
-//   const loadingMsg = document.createElement('div')
-//   loadingMsg.classList.add('message', 'bot')
-//   loadingMsg.textContent = 'Thinking...'
-//   loadingMsg.id = 'loading'
-//   messages.appendChild(loadingMsg)
-
-//   // Call backend
-//   fetch(`${BACKEND_URL}/chat`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ question: text, role: role })
-//   })
-//   .then(res => res.json())
-//   .then(data => {
-//     document.getElementById('loading').remove()
-//     const botMsg = document.createElement('div')
-//     botMsg.classList.add('message', 'bot')
-//     botMsg.innerHTML = formatResponse(data.answer || data.error)
-//     messages.appendChild(botMsg)
-//     messages.scrollTop = messages.scrollHeight
-//   })
-//   .catch(err => {
-//     document.getElementById('loading').remove()
-//     const botMsg = document.createElement('div')
-//     botMsg.classList.add('message', 'bot')
-//     botMsg.textContent = 'Error connecting to server. Please try again!'
-//     messages.appendChild(botMsg)
-//     messages.scrollTop = messages.scrollHeight
-//   })
-// }
-
-// function handleKey(event) {
-//   if (event.key === 'Enter') sendMessage()
-// }
-
-const BACKEND_URL = "https://baja-rulebot-production.up.railway.app"
-let currentUserId = 0
+const BACKEND_URL = window.BACKEND_URL || "http://127.0.0.1:8000";
+let currentUserId = 0;
 
 window.onload = function() {
-  currentUserId = parseInt(localStorage.getItem('user_id')) || 0
-}
+  currentUserId = parseInt(localStorage.getItem('user_id')) || 0;
+};
 
 function formatResponse(text) {
-  // Convert **bold** to <strong>
-  text = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#f97316;">$1</strong>')
-  
+  if (!text) return "";
+  // Convert **bold** to styled span
+  let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#f97316;">$1</strong>');
+
   // Convert numbered list - each point on new line
-  text = text.replace(/(\d+)\.\s+/g, '<br><br><span style="color:#f97316; font-weight:700;">$1.</span> ')
-  
+  formatted = formatted.replace(/(\d+)\.\s+/g, '<br><br><span style="color:#f97316; font-weight:700;">$1.</span> ');
+
   // Convert bullet points
-  text = text.replace(/[-•]\s+/g, '<br><span style="color:#f97316;">•</span> ')
-  
+  formatted = formatted.replace(/[-•]\s+/g, '<br><span style="color:#f97316;">•</span> ');
+
   // Convert line breaks
-  text = text.replace(/\n/g, '<br>')
-  
+  formatted = formatted.replace(/\n/g, '<br>');
+
   // Clean up extra breaks at start
-  text = text.replace(/^(<br>)+/, '')
-  
-  return `<div style="line-height:1.8;">${text}</div>`
+  formatted = formatted.replace(/^(<br>)+/, '');
+
+  return `<div style="line-height:1.8;">${formatted}</div>`;
 }
 
 function sendMessage() {
-  const input = document.getElementById('chatInput')
-  const messages = document.getElementById('chatMessages')
-  const role = document.getElementById('roleSelect').value
-  const text = input.value.trim()
+  const input = document.getElementById('chatInput');
+  const messages = document.getElementById('chatMessages');
+  const roleElem = document.getElementById('roleSelect');
+  const role = roleElem ? roleElem.value : (localStorage.getItem('userRole') || 'Team Member');
+  const text = input.value.trim();
 
-  if (!text) return
+  if (!text) return;
 
   // Add user message
-  const userMsg = document.createElement('div')
-  userMsg.classList.add('message', 'user')
-  userMsg.textContent = text
-  messages.appendChild(userMsg)
+  const userMsg = document.createElement('div');
+  userMsg.classList.add('message', 'user');
+  userMsg.textContent = text;
+  messages.appendChild(userMsg);
 
-  input.value = ''
-  messages.scrollTop = messages.scrollHeight
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
 
-  // Show loading
-  const loadingMsg = document.createElement('div')
-  loadingMsg.classList.add('message', 'bot')
-  loadingMsg.innerHTML = '⏳ <em style="color:#6b7280;">Searching rulebook...</em>'
-  loadingMsg.id = 'loading'
-  messages.appendChild(loadingMsg)
-  messages.scrollTop = messages.scrollHeight
+  // Show loading indicator
+  const loadingMsg = document.createElement('div');
+  loadingMsg.classList.add('message', 'bot');
+  loadingMsg.innerHTML = '⏳ <em style="color:#6b7280;">Searching rulebook...</em>';
+  loadingMsg.id = 'loading';
+  messages.appendChild(loadingMsg);
+  messages.scrollTop = messages.scrollHeight;
 
   // Call backend
   fetch(`${BACKEND_URL}/chat`, {
@@ -136,31 +67,32 @@ function sendMessage() {
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById('loading').remove()
+    const loadingElem = document.getElementById('loading');
+    if (loadingElem) loadingElem.remove();
 
     // Bot wrapper
-    const botWrapper = document.createElement('div')
+    const botWrapper = document.createElement('div');
     botWrapper.style.cssText = `
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 8px;
-    `
+    `;
 
     // Bot message
-    const botMsg = document.createElement('div')
-    botMsg.classList.add('message', 'bot')
-    botMsg.innerHTML = formatResponse(data.answer || data.error)
-    botWrapper.appendChild(botMsg)
+    const botMsg = document.createElement('div');
+    botMsg.classList.add('message', 'bot');
+    botMsg.innerHTML = formatResponse(data.answer || data.error);
+    botWrapper.appendChild(botMsg);
 
     // Feedback buttons
     if (data.chat_id > 0) {
-      const feedbackDiv = document.createElement('div')
+      const feedbackDiv = document.createElement('div');
       feedbackDiv.style.cssText = `
         display: flex;
         gap: 8px;
         padding-left: 4px;
-      `
+      `;
       feedbackDiv.innerHTML = `
         <button onclick="sendFeedback(${data.chat_id}, 'up', this)"
           style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.3);
@@ -173,21 +105,23 @@ function sendMessage() {
                  color:#f87171; padding:6px 14px; border-radius:8px;
                  cursor:pointer; font-size:13px; transition:all 0.2s;">
           👎 Not Helpful
-        </button>`
-      botWrapper.appendChild(feedbackDiv)
+        </button>`;
+      botWrapper.appendChild(feedbackDiv);
     }
 
-    messages.appendChild(botWrapper)
-    messages.scrollTop = messages.scrollHeight
+    messages.appendChild(botWrapper);
+    messages.scrollTop = messages.scrollHeight;
   })
   .catch(err => {
-    document.getElementById('loading').remove()
-    const botMsg = document.createElement('div')
-    botMsg.classList.add('message', 'bot')
-    botMsg.textContent = 'Error connecting to server. Please try again!'
-    messages.appendChild(botMsg)
-    messages.scrollTop = messages.scrollHeight
-  })
+    const loadingElem = document.getElementById('loading');
+    if (loadingElem) loadingElem.remove();
+
+    const botMsg = document.createElement('div');
+    botMsg.classList.add('message', 'bot');
+    botMsg.textContent = 'Error connecting to server. Please try again!';
+    messages.appendChild(botMsg);
+    messages.scrollTop = messages.scrollHeight;
+  });
 }
 
 function sendFeedback(chatId, feedback, btn) {
@@ -199,10 +133,10 @@ function sendFeedback(chatId, feedback, btn) {
   .then(() => {
     btn.parentElement.innerHTML = feedback === 'up'
       ? '<span style="color:#34d399; font-size:13px;">✅ Thanks for your feedback!</span>'
-      : '<span style="color:#f87171; font-size:13px;">Thanks for your feedback!</span>'
-  })
+      : '<span style="color:#f87171; font-size:13px;">Thanks for your feedback!</span>';
+  });
 }
 
 function handleKey(event) {
-  if (event.key === 'Enter') sendMessage()
+  if (event.key === 'Enter') sendMessage();
 }
