@@ -3,7 +3,11 @@ import json
 import hashlib
 import secrets
 from urllib.parse import urlparse
+from dotenv import load_dotenv
 import mysql.connector
+
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+load_dotenv()
 
 
 # ==============================================================================
@@ -114,9 +118,15 @@ def init_db():
         conn.commit()
         cursor.close()
         conn.close()
-        print("✅ Database tables verified and initialized successfully.")
+        try:
+            print("✅ Database tables verified and initialized successfully.")
+        except Exception:
+            print("[DB] Database tables verified and initialized successfully.")
     except Exception as e:
-        print(f"⚠️ Database initialization notice: {e}")
+        try:
+            print(f"⚠️ Database initialization notice: {e}")
+        except Exception:
+            print(f"[DB Notice] {e}")
 
 
 # ==============================================================================
@@ -312,11 +322,15 @@ def get_all_chats():
 _embedding_model = None
 _chroma_client = None
 _collection = None
+_vector_available = True
 
 
 def get_vector_store():
     """Lazy-load ChromaDB and embedding model to ensure resilient startup."""
-    global _embedding_model, _chroma_client, _collection
+    global _embedding_model, _chroma_client, _collection, _vector_available
+    if not _vector_available:
+        return None, None
+
     if _collection is None:
         try:
             import chromadb
@@ -325,7 +339,11 @@ def get_vector_store():
             _chroma_client = chromadb.PersistentClient(path="./chroma_db")
             _collection = _chroma_client.get_or_create_collection("rulebook_chunks")
         except Exception as e:
-            print(f"⚠️ Vector engine lazy-load notice: {e}")
+            _vector_available = False
+            try:
+                print(f"[Vector Engine Notice] {e}")
+            except Exception:
+                pass
             return None, None
     return _embedding_model, _collection
 

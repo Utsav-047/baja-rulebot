@@ -3,9 +3,58 @@ import requests
 from dotenv import load_dotenv
 from database import search_chunks
 
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
+
+
+def request_llm_completion(prompt: str, api_key: str) -> tuple:
+    """
+    Call Groq completions API with graceful fallback across available LLM models.
+    Returns (content, error_message).
+    """
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    preferred_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    candidate_models = [
+        preferred_model,
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b",
+        "llama-3.3-70b-versatile"
+    ]
+    models_to_try = list(dict.fromkeys(candidate_models))
+
+    last_error = ""
+    for model in models_to_try:
+        data = {
+            "model": model,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2
+        }
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=35
+            )
+            result = response.json()
+            if "choices" in result and result["choices"]:
+                content = result["choices"][0]["message"]["content"]
+                return content, None
+            else:
+                last_error = result.get("error", {}).get("message", "AI service error.")
+        except Exception as e:
+            last_error = str(e)
+
+    return None, last_error
 
 
 def get_answer(question: str, rulebook_text: str, role: str) -> str:
@@ -150,38 +199,10 @@ BAJA SAEINDIA Rulebook 2026
             "Please add `API_KEY=gsk_...` to your `.env` file to enable AI answers."
         )
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.2
-    }
-
-    try:
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers=headers,
-            json=data,
-            timeout=30
-        )
-
-        result = response.json()
-        if "choices" in result:
-            return result["choices"][0]["message"]["content"] + snippets
-        else:
-            print("Groq API error response:", result)
-            error_msg = result.get("error", {}).get("message", "AI service error.")
-            return f"⚠️ **AI Service Error:** {error_msg}. Please verify your API key and quota."
-
-    except Exception as e:
-        print("Chatbot query exception:", str(e))
-        return f"⚠️ **Error connecting to AI service:** {str(e)}"
+    content, error = request_llm_completion(prompt, api_key)
+    if content is not None:
+        return content + snippets
+    return f"⚠️ **AI Service Error:** {error}. Please verify your API key and quota."
 
 
 def get_checklist_items(category: str, rulebook_text: str, role: str) -> str:
@@ -218,32 +239,7 @@ STRICT RULES:
     if not api_key:
         return "1. API_KEY is missing in backend configuration."
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.2
-    }
-
-    try:
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers=headers,
-            json=data,
-            timeout=30
-        )
-
-        result = response.json()
-        if "choices" in result:
-            return result["choices"][0]["message"]["content"]
-        else:
-            return "1. AI service error generating checklist. Please try again."
-
-    except Exception as e:
-        return f"1. Error generating checklist: {str(e)}"
+    content, error = request_llm_completion(prompt, api_key)
+    if content is not None:
+        return content
+    return f"1. Error generating checklist: {error}"
