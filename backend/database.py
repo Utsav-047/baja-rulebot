@@ -43,6 +43,13 @@ def get_pool():
                 "password": os.getenv("MYSQLPASSWORD") or os.getenv("MYSQL_PASSWORD") or "",
                 "database": os.getenv("MYSQLDATABASE") or os.getenv("MYSQL_DATABASE") or "baja_rulebot"
             }
+        
+        # Automatically enable SSL for cloud providers (TiDB Cloud, Aiven, PlanetScale)
+        if "tidbcloud.com" in db_config["host"] or os.getenv("MYSQL_SSL", "false").lower() in ("true", "1"):
+            db_config["ssl_disabled"] = False
+            db_config["ssl_verify_cert"] = False
+            db_config["ssl_verify_identity"] = False
+
         try:
             _connection_pool = pooling.MySQLConnectionPool(
                 pool_name="baja_rulebot_pool",
@@ -51,7 +58,8 @@ def get_pool():
                 **db_config
             )
             print("[Database Pool] Initialized MySQL Connection Pool (size=10)")
-        except Exception:
+        except Exception as e:
+            print(f"[Database Pool Error] {e}")
             return None
     return _connection_pool
 
@@ -72,20 +80,30 @@ def get_connection():
     database_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
     if database_url:
         parsed = urlparse(database_url)
+        host = parsed.hostname or "localhost"
+        extra = {}
+        if "tidbcloud.com" in host or os.getenv("MYSQL_SSL", "false").lower() in ("true", "1"):
+            extra = {"ssl_disabled": False, "ssl_verify_cert": False, "ssl_verify_identity": False}
         return mysql.connector.connect(
-            host=parsed.hostname or "localhost",
+            host=host,
             port=parsed.port or 3306,
             user=parsed.username or "root",
             password=parsed.password or "",
-            database=parsed.path.lstrip("/") or "baja_rulebot"
+            database=parsed.path.lstrip("/") or "baja_rulebot",
+            **extra
         )
 
+    host = os.getenv("MYSQLHOST") or os.getenv("MYSQL_HOST") or "localhost"
+    extra = {}
+    if "tidbcloud.com" in host or os.getenv("MYSQL_SSL", "false").lower() in ("true", "1"):
+        extra = {"ssl_disabled": False, "ssl_verify_cert": False, "ssl_verify_identity": False}
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST") or os.getenv("MYSQL_HOST") or "localhost",
+        host=host,
         port=int(os.getenv("MYSQLPORT") or os.getenv("MYSQL_PORT") or 3306),
         user=os.getenv("MYSQLUSER") or os.getenv("MYSQL_USER") or "root",
         password=os.getenv("MYSQLPASSWORD") or os.getenv("MYSQL_PASSWORD") or "",
-        database=os.getenv("MYSQLDATABASE") or os.getenv("MYSQL_DATABASE") or "baja_rulebot"
+        database=os.getenv("MYSQLDATABASE") or os.getenv("MYSQL_DATABASE") or "baja_rulebot",
+        **extra
     )
 
 
