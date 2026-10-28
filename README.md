@@ -215,13 +215,14 @@ docker compose up --build
 | `DELETE`| `/checklist/{user_id}/{cat}` | Bearer Token | Remove saved checklist |
 | `GET` | `/admin/users` | Admin Token | List registered users with roles and teams |
 | `GET` | `/admin/chats` | Admin Token | Audit all query logs and feedback analytics |
+| `GET` | `/admin/audit-logs` | Admin Token | Inspect CERT-In regulatory ICT audit logs |
 | `POST` | `/admin/upload-global` | Admin Token | Ingest and index global rulebook PDF |
 | `POST` | `/forgot-password/send-otp` | Public | Send 6-digit verification code to user email |
 | `POST` | `/forgot-password/reset` | Public | Verify OTP code and reset password |
 
 ---
 
-## 🔒 Security Architecture
+## 🔒 Security & Regulatory Architecture
 
 1. **JWT Bearer Token Architecture**:
    - Uses PyJWT with standard HMAC-SHA256 (`HS256`) and configurable expiration.
@@ -235,6 +236,10 @@ docker compose up --build
    - Salted `PBKDF2-HMAC-SHA256` hashing with 100,000 rounds.
 5. **Zero Hardcoded Secrets**:
    - Managed strictly via environment variables isolated from version control.
+6. **Regulatory ICT & CERT-In Intermediary Compliance (Indian IT Act, 2000)**:
+   - Maintains an immutable digital audit trail of all access, authentication events, and query submissions.
+   - Dual-persistence architecture: Relational storage in `user_audit_logs` and structured rotating file logs in `logs/certin_audit.log`.
+   - Records client IP (with proxy/`X-Forwarded-For` resolution), user identity, HTTP method, endpoint, status code, latency (ms), and User-Agent signature.
 
 ---
 

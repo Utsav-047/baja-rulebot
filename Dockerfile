@@ -40,3 +40,4 @@ WORKDIR /app/backend
 
 # Default execution command
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+

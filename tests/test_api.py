@@ -178,3 +178,37 @@ def test_chatbot_greetings():
 
     ans_thanks = get_answer("thank you", rulebook_text="", role="Team Member")
     assert "You're welcome" in ans_thanks
+
+
+# ==============================================================================
+# 6. Regulatory & Security Audit Logging (CERT-In Compliance)
+# ==============================================================================
+
+def test_admin_audit_logs_unauthenticated():
+    """Verify /admin/audit-logs rejects unauthenticated requests."""
+    response = client.get("/admin/audit-logs")
+    assert response.status_code == 401
+
+
+def test_admin_audit_logs_forbidden_for_user():
+    """Verify /admin/audit-logs rejects non-admin users with 403 Forbidden."""
+    user_token = create_access_token(user_id=88, name="User", email="user@baja.org", role="Member", is_admin=0)
+    headers = {"Authorization": f"Bearer {user_token}"}
+    response = client.get("/admin/audit-logs", headers=headers)
+    assert response.status_code == 403
+
+
+def test_admin_audit_logs_authorized():
+    """Verify /admin/audit-logs returns audit records for admin."""
+    admin_token = create_access_token(user_id=1, name="Admin", email="admin@baja.org", role="Advisor", is_admin=1)
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    fake_logs = [
+        (1, 10, "User", "user@baja.org", "127.0.0.1", "POST", "/login", "USER_LOGIN_SUCCESS", 200, 15.2, "2026-01-01 10:00:00"),
+    ]
+    with patch("main.get_audit_logs", return_value=fake_logs):
+        response = client.get("/admin/audit-logs", headers=headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["ip_address"] == "127.0.0.1"
+        assert data[0]["action"] == "USER_LOGIN_SUCCESS"

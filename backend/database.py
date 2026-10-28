@@ -165,6 +165,24 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT DEFAULT NULL,
+                ip_address VARCHAR(45) NOT NULL,
+                user_agent VARCHAR(500) DEFAULT NULL,
+                method VARCHAR(10) NOT NULL,
+                endpoint VARCHAR(255) NOT NULL,
+                action VARCHAR(100) NOT NULL,
+                status_code INT NOT NULL,
+                execution_time_ms FLOAT DEFAULT 0.0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user_id (user_id),
+                INDEX idx_ip_address (ip_address),
+                INDEX idx_created_at (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
         conn.commit()
         cursor.close()
         conn.close()
@@ -647,3 +665,53 @@ def delete_checklist(user_id, category):
     cursor.close()
     conn.close()
     return rows > 0
+
+
+# ==============================================================================
+# Security & Regulatory Audit Logging (CERT-In / Indian IT Act Compliance)
+# ==============================================================================
+
+def save_audit_log(user_id, ip_address, user_agent, method, endpoint, action, status_code, execution_time_ms=0.0):
+    """
+    Persist an audit trail record compliant with CERT-In & Indian IT Act intermediary guidelines.
+    Logs IP address, user identity, action, endpoint, status, and request duration.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO user_audit_logs 
+               (user_id, ip_address, user_agent, method, endpoint, action, status_code, execution_time_ms) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_id, str(ip_address)[:45], str(user_agent)[:500], str(method)[:10],
+             str(endpoint)[:255], str(action)[:100], int(status_code), float(execution_time_ms))
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception:
+        pass
+
+
+def get_audit_logs(limit=100):
+    """
+    Retrieve recent audit logs for administrative inspection and compliance review.
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT a.id, a.user_id, u.name, u.email, a.ip_address, a.method, 
+                      a.endpoint, a.action, a.status_code, a.execution_time_ms, a.created_at
+               FROM user_audit_logs a
+               LEFT JOIN users u ON a.user_id = u.id
+               ORDER BY a.created_at DESC
+               LIMIT %s""",
+            (int(limit),)
+        )
+        logs = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return logs
+    except Exception:
+        return []

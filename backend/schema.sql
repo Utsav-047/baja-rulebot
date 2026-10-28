@@ -63,3 +63,20 @@ CREATE TABLE IF NOT EXISTS checklists (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 7. User Security & Regulatory Audit Logs (CERT-In / Indian IT Act Intermediary Compliance)
+CREATE TABLE IF NOT EXISTS user_audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT DEFAULT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    user_agent VARCHAR(500) DEFAULT NULL,
+    method VARCHAR(10) NOT NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    status_code INT NOT NULL,
+    execution_time_ms FLOAT DEFAULT 0.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_ip_address (ip_address),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

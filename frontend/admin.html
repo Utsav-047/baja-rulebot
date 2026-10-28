@@ -308,6 +308,40 @@
     </div>
   </section>
 
+
+  <!-- CERT-IN REGULATORY AUDIT LOGS -->
+  <section class="mt-gutter">
+    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+      <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-sm">security</span>
+          <div>
+            <h3 class="font-headline-md text-base font-bold text-metallic-slate">User Access & Security Audit Trail</h3>
+            <p class="text-xs text-on-surface-variant">Regulatory ICT compliance logs (CERT-In / IT Act Directions)</p>
+          </div>
+        </div>
+        <button onclick="loadAuditLogs()" class="px-3 py-1 rounded bg-engineering-blue-light text-primary text-xs font-bold hover:bg-primary hover:text-white transition-colors">Refresh Logs</button>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar max-h-96">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low">
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">Timestamp</th>
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">Client IP</th>
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">User / Identity</th>
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">Action / Event</th>
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">Method & Path</th>
+              <th class="px-4 py-2.5 font-label-caps text-[10px] text-on-surface-variant uppercase">Latency</th>
+            </tr>
+          </thead>
+          <tbody id="auditTable" class="divide-y divide-outline-variant">
+            <tr><td colspan="6" class="text-center py-6 text-on-surface-variant font-body-sm">Loading audit logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <script>
@@ -322,9 +356,36 @@
     loadUsers()
     loadChats()
     loadGlobalRulebook()
+    loadAuditLogs()
   }
 
   // ── LOAD DATA ──
+  
+  function loadAuditLogs() {
+    fetch(`${BACKEND_URL}/admin/audit-logs?limit=50`, {
+      headers: window.getAuthHeaders ? window.getAuthHeaders() : {}
+    })
+    .then(r => r.json())
+    .then(logs => {
+      const tbody = document.getElementById('auditTable')
+      if (!tbody) return
+      if (!Array.isArray(logs) || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-on-surface-variant">No audit records logged yet</td></tr>'
+        return
+      }
+      tbody.innerHTML = logs.map(l => `
+        <tr class="hover:bg-engineering-blue-light/20 transition-colors text-xs font-mono">
+          <td class="px-4 py-2.5 text-on-surface font-semibold">${l.created_at}</td>
+          <td class="px-4 py-2.5 text-primary font-bold">${l.ip_address}</td>
+          <td class="px-4 py-2.5 text-on-surface-variant">${l.user_email || 'Anonymous'}</td>
+          <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.status_code < 400 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${l.action}</span></td>
+          <td class="px-4 py-2.5 text-on-surface-variant">${l.method} ${l.endpoint}</td>
+          <td class="px-4 py-2.5 font-bold">${l.execution_time_ms}ms</td>
+        </tr>
+      `).join('')
+    }).catch(() => {})
+  }
+
   function loadUsers() {
     fetch(`${BACKEND_URL}/admin/users`, { headers: window.getAuthHeaders ? window.getAuthHeaders() : {} }).then(r => r.json()).then(users => {
       document.getElementById('totalUsers').textContent = users.length
@@ -349,7 +410,8 @@
     })
   }
 
-  function loadGlobalRulebook() {
+  function loadGlobalRulebook()
+    loadAuditLogs() {
     // Check if already in memory
     fetch(`${BACKEND_URL}/rulebook/status`)
     .then(r => r.json())

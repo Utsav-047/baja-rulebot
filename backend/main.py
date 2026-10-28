@@ -13,7 +13,10 @@ from email.mime.multipart import MIMEMultipart
 import jwt
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header, Depends
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header, Depends, Request
+import json
+import logging
+from logging.handlers import RotatingFileHandler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -40,7 +43,9 @@ from database import (
     save_otp,
     verify_otp,
     reset_password,
-    email_exists
+    email_exists,
+    save_audit_log,
+    get_audit_logs
 )
 
 app = FastAPI(
@@ -183,6 +188,107 @@ class ChecklistGenerateRequest(BaseModel):
     category: str
     role: str = "Team Member"
 
+
+
+# ==============================================================================
+# CERT-In / Indian IT Act Regulatory Security Audit Logging
+# ==============================================================================
+
+os.makedirs("logs", exist_ok=True)
+audit_logger = logging.getLogger("certin_audit")
+audit_logger.setLevel(logging.INFO)
+if not audit_logger.handlers:
+    file_handler = RotatingFileHandler(
+        "logs/certin_audit.log",
+        maxBytes=10 * 1024 * 1024,  # 10 MB per log segment
+        backupCount=5,
+        encoding="utf-8"
+    )
+    formatter = logging.Formatter('{"timestamp":"%(asctime)s", %(message)s}')
+    file_handler.setFormatter(formatter)
+    audit_logger.addHandler(file_handler)
+
+
+def log_audit_event(request: Request, action: str, status_code: int, user_id=None, duration_ms: float = 0.0):
+    """
+    Record audit event to both persistent file log and relational database
+    in strict compliance with Indian CERT-In guidelines.
+    """
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        client_ip = forwarded_for.split(",")[0].strip()
+    else:
+        client_ip = request.client.host if request.client else "unknown"
+
+    user_agent = request.headers.get("user-agent", "unknown")
+    path = request.url.path
+    method = request.method
+
+    # 1. Append to rotating audit file
+    try:
+        log_json = json.dumps({
+            "ip": client_ip,
+            "user_id": user_id,
+            "method": method,
+            "endpoint": path,
+            "action": action,
+            "status_code": status_code,
+            "latency_ms": duration_ms,
+            "user_agent": user_agent[:200]
+        })
+        audit_logger.info(f'"event":{log_json}')
+    except Exception:
+        pass
+
+    # 2. Persist to relational database
+    try:
+        save_audit_log(user_id, client_ip, user_agent, method, path, action, status_code, duration_ms)
+    except Exception:
+        pass
+
+
+@app.middleware("http")
+async def audit_log_middleware(request: Request, call_next):
+    """
+    Global intermediary audit logging middleware enforcing digital trail compliance.
+    """
+    start_time = time.time()
+
+    # Skip heavy static files
+    if request.url.path.startswith("/uploads") or request.url.path == "/favicon.ico":
+        return await call_next(request)
+
+    response = await call_next(request)
+    duration_ms = round((time.time() - start_time) * 1000, 2)
+
+    path = request.url.path
+    method = request.method
+
+    # Derive human-readable compliance action
+    action = f"{method}:{path}"
+    if path == "/login":
+        action = "USER_LOGIN_SUCCESS" if response.status_code == 200 else "USER_LOGIN_FAILED"
+    elif path == "/register":
+        action = "USER_REGISTRATION"
+    elif path == "/chat":
+        action = "COMPLIANCE_QUERY"
+    elif path == "/checklist/generate":
+        action = "CHECKLIST_GENERATE"
+    elif path.startswith("/admin/"):
+        action = "ADMIN_ACCESS"
+
+    # Attempt to resolve user_id from JWT token
+    user_id = None
+    auth_header = request.headers.get("authorization")
+    if auth_header and auth_header.lower().startswith("bearer "):
+        try:
+            token_data = decode_access_token(auth_header.split()[1])
+            user_id = token_data.get("user_id")
+        except Exception:
+            pass
+
+    log_audit_event(request, action, response.status_code, user_id=user_id, duration_ms=duration_ms)
+    return response
 
 # ==============================================================================
 # Startup Event
@@ -563,6 +669,29 @@ def admin_chats(current_user: dict = Depends(require_admin)):
             "created_at": str(c[9])
         }
         for c in chats
+    ]
+
+@app.get("/admin/audit-logs")
+def admin_audit_logs(limit: int = 100, current_user: dict = Depends(require_admin)):
+    """
+    Retrieve CERT-In compliance audit logs (admin only).
+    """
+    logs = get_audit_logs(limit=limit)
+    return [
+        {
+            "id": l[0],
+            "user_id": l[1],
+            "user_name": l[2],
+            "user_email": l[3],
+            "ip_address": l[4],
+            "method": l[5],
+            "endpoint": l[6],
+            "action": l[7],
+            "status_code": l[8],
+            "execution_time_ms": l[9],
+            "created_at": str(l[10])
+        }
+        for l in logs
     ]
 
 
