@@ -174,6 +174,17 @@ Visit the application in your browser:
 
 ---
 
+### 7. Run the Automated Test Suite (`pytest`)
+
+Execute the automated test suite covering endpoints, sliding-window chunking, password hashing, IDOR protection, and JWT verification:
+
+```bash
+# Run pytest from project root
+pytest -v tests/test_api.py
+```
+
+---
+
 ## 📡 API Reference Overview
 
 | Method | Endpoint | Authorization | Description |

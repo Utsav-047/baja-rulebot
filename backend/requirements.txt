@@ -8,3 +8,4 @@ requests
 chromadb
 sentence-transformers
 pyjwt
+pytest

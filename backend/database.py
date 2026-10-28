@@ -5,6 +5,7 @@ import secrets
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 import mysql.connector
+from mysql.connector import pooling
 
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv()
@@ -14,11 +15,60 @@ load_dotenv()
 # Database Connection Helper
 # ==============================================================================
 
+_connection_pool = None
+
+
+def get_pool():
+    """
+    Initialize and cache a shared MySQL connection pool (size=10).
+    Reuses open TCP connections across queries to minimize handshake latency.
+    """
+    global _connection_pool
+    if _connection_pool is None:
+        database_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
+        if database_url:
+            parsed = urlparse(database_url)
+            db_config = {
+                "host": parsed.hostname or "localhost",
+                "port": parsed.port or 3306,
+                "user": parsed.username or "root",
+                "password": parsed.password or "",
+                "database": parsed.path.lstrip("/") or "baja_rulebot"
+            }
+        else:
+            db_config = {
+                "host": os.getenv("MYSQLHOST") or os.getenv("MYSQL_HOST") or "localhost",
+                "port": int(os.getenv("MYSQLPORT") or os.getenv("MYSQL_PORT") or 3306),
+                "user": os.getenv("MYSQLUSER") or os.getenv("MYSQL_USER") or "root",
+                "password": os.getenv("MYSQLPASSWORD") or os.getenv("MYSQL_PASSWORD") or "",
+                "database": os.getenv("MYSQLDATABASE") or os.getenv("MYSQL_DATABASE") or "baja_rulebot"
+            }
+        try:
+            _connection_pool = pooling.MySQLConnectionPool(
+                pool_name="baja_rulebot_pool",
+                pool_size=10,
+                pool_reset_session=True,
+                **db_config
+            )
+            print("[Database Pool] Initialized MySQL Connection Pool (size=10)")
+        except Exception:
+            return None
+    return _connection_pool
+
+
 def get_connection():
     """
-    Establish connection to MySQL using individual env vars or DATABASE_URL/MYSQL_URL.
-    Defaults to localhost:3306 for local development.
+    Acquire an active database connection from the pool, with seamless
+    fallback to a direct connection if the pool is saturated or uninitialized.
     """
+    pool = get_pool()
+    if pool is not None:
+        try:
+            return pool.get_connection()
+        except Exception:
+            pass
+
+    # Direct fallback
     database_url = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
     if database_url:
         parsed = urlparse(database_url)
