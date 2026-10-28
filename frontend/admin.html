@@ -326,7 +326,7 @@
 
   // ── LOAD DATA ──
   function loadUsers() {
-    fetch(`${BACKEND_URL}/admin/users`).then(r => r.json()).then(users => {
+    fetch(`${BACKEND_URL}/admin/users`, { headers: window.getAuthHeaders ? window.getAuthHeaders() : {} }).then(r => r.json()).then(users => {
       document.getElementById('totalUsers').textContent = users.length
       document.getElementById('userCount').textContent = users.length + ' users'
       document.getElementById('usersTable').innerHTML = users.length === 0
@@ -343,7 +343,7 @@
   }
 
   function loadChats() {
-    fetch(`${BACKEND_URL}/admin/chats`).then(r => r.json()).then(chats => {
+    fetch(`${BACKEND_URL}/admin/chats`, { headers: window.getAuthHeaders ? window.getAuthHeaders() : {} }).then(r => r.json()).then(chats => {
       document.getElementById('totalChats').textContent = chats.length
       document.getElementById('totalFeedback').textContent = chats.filter(c => c.feedback === 'up').length
     })
@@ -450,7 +450,8 @@
     const formData = new FormData()
     formData.append('file', file)
 
-    fetch(`${BACKEND_URL}/admin/upload-global`, { method: 'POST', body: formData })
+    fetch(`${BACKEND_URL}/admin/upload-global`, {
+      headers: window.getAuthHeaders ? window.getAuthHeaders() : {}, method: 'POST', body: formData })
     .then(r => r.json())
     .then(data => {
       clearInterval(interval)

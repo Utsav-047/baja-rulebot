@@ -187,7 +187,7 @@
   }
 
   function loadChats() {
-    fetch(`${BACKEND_URL}/admin/chats`).then(r => r.json()).then(chats => {
+    fetch(`${BACKEND_URL}/admin/chats`, { headers: window.getAuthHeaders ? window.getAuthHeaders() : {} }).then(r => r.json()).then(chats => {
       allChats = chats
 
       // Overall stats

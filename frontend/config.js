@@ -41,5 +41,15 @@
     }
   };
 
+  // Helper function to return authentication headers for protected endpoints
+  window.getAuthHeaders = function (additionalHeaders = {}) {
+    const token = localStorage.getItem("token");
+    const headers = { ...additionalHeaders };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
   console.log(`[BAJA RuleBot] Active Backend URL: ${window.BACKEND_URL}`);
 })();

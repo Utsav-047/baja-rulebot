@@ -473,7 +473,7 @@
     if (currentUserId <= 0 || !currentCategory) return
     fetch(`${BACKEND_URL}/checklist/save`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: window.getAuthHeaders ? window.getAuthHeaders({'Content-Type': 'application/json'}) : {'Content-Type': 'application/json'},
       body: JSON.stringify({
         user_id: currentUserId,
         category: currentCategory,

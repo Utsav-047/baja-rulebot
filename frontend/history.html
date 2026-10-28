@@ -41,7 +41,6 @@
   <div class="px-6 py-6 flex items-center gap-3">
     <h1 class="font-headline-md text-primary text-2xl tracking-tight">BAJA <span class="font-bold">RuleBot</span></h1>
   </div>
-  </div>
   <div class="px-4 mb-4">
     <div class="bg-surface-container-low rounded-xl p-3 flex items-center gap-3">
       <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm" id="userAvatar">U</div>
@@ -208,7 +207,7 @@
   }
 
   function loadHistory(userId) {
-    fetch(`${BACKEND_URL}/history/${userId}`)
+    fetch(`${BACKEND_URL}/history/${userId}`, { headers: window.getAuthHeaders ? window.getAuthHeaders() : {} })
     .then(r => r.json())
     .then(chats => {
       allChats = chats

@@ -6,8 +6,10 @@ import string
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import jwt
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -60,6 +62,77 @@ rulebook_text = ""
 rulebook_filename = ""
 otp_cooldown = {}
 
+
+
+# ==============================================================================
+# Security & JWT Token Management
+# ==============================================================================
+
+JWT_SECRET = os.getenv("JWT_SECRET", "baja_saeindia_rulebot_jwt_secret_2026")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 72
+
+def create_access_token(user_id: int, name: str, email: str, role: str, is_admin: int) -> str:
+    """Generate a signed JWT token containing user identity and admin claims."""
+    payload = {
+        "sub": str(user_id),
+        "user_id": user_id,
+        "name": name,
+        "email": email,
+        "role": role,
+        "is_admin": int(is_admin),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def decode_access_token(token: str) -> dict:
+    """Decode and validate a JWT access token."""
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired. Please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid authorization token.")
+
+
+def get_current_user(authorization: str = Header(None)) -> dict:
+    """FastAPI dependency to extract and verify the current authenticated user."""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authentication credentials were not provided.")
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid token format. Expected 'Bearer <token>'.")
+    return decode_access_token(parts[1])
+
+
+def require_admin(authorization: str = Header(None)) -> dict:
+    """FastAPI dependency to enforce administrator privileges."""
+    user_payload = get_current_user(authorization)
+    if not user_payload.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Forbidden: Administrator privileges required.")
+    return user_payload
+
+
+def chunk_text(text: str, chunk_size: int = 500, overlap: int = 75) -> list:
+    """
+    Split text into chunks with a sliding word window and overlap to preserve
+    technical context, rule headings, and table data across chunk boundaries.
+    """
+    words = text.split()
+    if not words:
+        return []
+    if len(words) <= chunk_size:
+        return [" ".join(words)]
+
+    chunks = []
+    step = max(1, chunk_size - overlap)
+    for i in range(0, len(words), step):
+        chunk = " ".join(words[i:i + chunk_size])
+        chunks.append(chunk)
+        if i + chunk_size >= len(words):
+            break
+    return chunks
 
 # ==============================================================================
 # Pydantic Schemas
@@ -124,8 +197,7 @@ async def startup_handler():
             if os.path.exists(filepath):
                 with open(filepath, "rb") as f:
                     rulebook_text = extract_text_from_pdf(f)
-                words = rulebook_text.split()
-                chunks = [' '.join(words[i:i+500]) for i in range(0, len(words), 500)]
+                chunks = chunk_text(rulebook_text, chunk_size=500, overlap=75)
                 save_chunks(chunks)
                 save_chunks_to_chroma(chunks)
                 rulebook_filename = filename
@@ -173,20 +245,24 @@ def register(request: RegisterRequest):
         request.password, request.role, request.team
     )
     if user_id:
-        return {"message": "Registration successful!", "user_id": user_id}
+        token = create_access_token(user_id, request.name, request.email, request.role, 0)
+        return {"message": "Registration successful!", "user_id": user_id, "token": token}
     return JSONResponse(status_code=400, content={"error": "Email already exists or invalid data!"})
 
 @app.post("/login")
 def login(request: LoginRequest):
     user = login_user(request.email, request.password)
     if user:
+        user_id, name, role, team, is_admin = user
+        token = create_access_token(user_id, name, request.email, role, is_admin)
         return {
             "message": "Login successful!",
-            "user_id": user[0],
-            "name": user[1],
-            "role": user[2],
-            "team": user[3],
-            "is_admin": user[4]
+            "token": token,
+            "user_id": user_id,
+            "name": name,
+            "role": role,
+            "team": team,
+            "is_admin": is_admin
         }
     return JSONResponse(status_code=401, content={"error": "Invalid email or password!"})
 
@@ -261,8 +337,7 @@ async def upload_rulebook(
     rulebook_filename = safe_filename
     word_count = len(text.split())
 
-    words = text.split()
-    chunks = [' '.join(words[i:i+500]) for i in range(0, len(words), 500)]
+    chunks = chunk_text(text, chunk_size=500, overlap=75)
     save_chunks(chunks)
     save_chunks_to_chroma(chunks)
     save_rulebook_record(user_id, safe_filename, filepath, is_global)
@@ -278,7 +353,8 @@ async def upload_rulebook(
 @app.post("/admin/upload-global")
 async def admin_upload_global(
     file: UploadFile = File(...),
-    user_id: int = Form(0)
+    user_id: int = Form(0),
+    current_user: dict = Depends(require_admin)
 ):
     global rulebook_text, rulebook_filename
 
@@ -300,8 +376,7 @@ async def admin_upload_global(
     rulebook_filename = safe_filename
     word_count = len(text.split())
 
-    words = text.split()
-    chunks = [' '.join(words[i:i+500]) for i in range(0, len(words), 500)]
+    chunks = chunk_text(text, chunk_size=500, overlap=75)
     save_chunks(chunks)
     save_chunks_to_chroma(chunks)
     save_rulebook_record(None, safe_filename, filepath, is_global=1)
@@ -324,8 +399,7 @@ async def load_rulebook():
                 with open(filepath, "rb") as f:
                     rulebook_text = extract_text_from_pdf(f)
                 rulebook_filename = filename
-                words = rulebook_text.split()
-                chunks = [' '.join(words[i:i+500]) for i in range(0, len(words), 500)]
+                chunks = chunk_text(rulebook_text, chunk_size=500, overlap=75)
                 save_chunks(chunks)
                 save_chunks_to_chroma(chunks)
                 return {"message": "Rulebook loaded!", "filename": filename, "loaded": True}
@@ -377,7 +451,11 @@ def feedback(request: FeedbackRequest):
     return {"message": "Feedback saved successfully!"}
 
 @app.get("/history/{user_id}")
-def history(user_id: int):
+def history(user_id: int, authorization: str = Header(None)):
+    if authorization:
+        current_user = get_current_user(authorization)
+        if current_user.get("user_id") != user_id and not current_user.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Forbidden: You cannot access another user's history.")
     chats = get_chat_history(user_id)
     return [
         {
@@ -425,14 +503,22 @@ def checklist_save(request: ChecklistSaveRequest):
     return {"message": "Checklist saved successfully!"}
 
 @app.get("/checklist/{user_id}/{category}")
-def checklist_get(user_id: int, category: str):
+def checklist_get(user_id: int, category: str, authorization: str = Header(None)):
+    if authorization:
+        current_user = get_current_user(authorization)
+        if current_user.get("user_id") != user_id and not current_user.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Forbidden: You cannot access another user's checklist.")
     items, updated_at = get_checklist(user_id, category)
     if items is not None:
         return {"found": True, "items": items, "updated_at": str(updated_at)}
     return {"found": False, "items": []}
 
 @app.delete("/checklist/{user_id}/{category}")
-def checklist_delete(user_id: int, category: str):
+def checklist_delete(user_id: int, category: str, authorization: str = Header(None)):
+    if authorization:
+        current_user = get_current_user(authorization)
+        if current_user.get("user_id") != user_id and not current_user.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Forbidden: You cannot delete another user's checklist.")
     deleted = delete_checklist(user_id, category)
     return {"deleted": deleted}
 
@@ -442,7 +528,7 @@ def checklist_delete(user_id: int, category: str):
 # ==============================================================================
 
 @app.get("/admin/users")
-def admin_users():
+def admin_users(current_user: dict = Depends(require_admin)):
     users = get_all_users()
     return [
         {
@@ -457,7 +543,7 @@ def admin_users():
     ]
 
 @app.get("/admin/chats")
-def admin_chats():
+def admin_chats(current_user: dict = Depends(require_admin)):
     chats = get_all_chats()
     return [
         {

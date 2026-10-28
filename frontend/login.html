@@ -494,6 +494,7 @@ function showForgot() {
       localStorage.setItem('userRole',  data.role)
       localStorage.setItem('teamName',  data.team)
       localStorage.setItem('is_admin',  data.is_admin)
+      if (data.token) localStorage.setItem('token', data.token)
       window.location.href = data.is_admin == 1 ? 'admin.html' : 'upload.html'
     })
     .catch(() => { errDiv.classList.remove('hidden'); errText.textContent = 'Server error! Try again.'; })
@@ -530,6 +531,7 @@ function showForgot() {
     .then(r => r.json())
     .then(data => {
       if (data.error) { errDiv.classList.remove('hidden'); errText.textContent = data.error; return; }
+      if (data.token) localStorage.setItem('token', data.token);
       sucDiv.classList.remove('hidden')
       setTimeout(() => showLogin(), 2000)
     })
