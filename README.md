@@ -1,14 +1,28 @@
 # 🏎️ BAJA RuleBot - Intelligent Rulebook Assistant & Compliance Engine
 
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Live Deployment](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://baja-rulebot.onrender.com)
+[![Cloud Database](https://img.shields.io/badge/Database-TiDB%20Cloud%20Serverless-0052CC?style=for-the-badge&logo=mysql&logoColor=white)](https://tidbcloud.com)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![MySQL](https://img.shields.io/badge/Database-MySQL%20%7C%20MariaDB-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
-[![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-FF6F00?style=for-the-badge)](https://www.trychroma.com/)
 [![Groq](https://img.shields.io/badge/AI_Engine-Groq_Cloud_LLM-F55036?style=for-the-badge)](https://groq.com)
+[![CERT-In](https://img.shields.io/badge/Compliance-CERT--In%20%2F%20IT%20Act%202000-008000?style=for-the-badge)](https://cert-in.org.in)
 [![JWT](https://img.shields.io/badge/Auth-PyJWT_Bearer_Tokens-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io)
 [![TailwindCSS](https://img.shields.io/badge/UI-TailwindCSS_3.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 
 > **An AI-powered Retrieval-Augmented Generation (RAG) compliance assistant designed specifically for BAJA SAEINDIA collegiate engineering teams, faculty advisors, and technical inspectors.**
+
+---
+
+## 🌐 Live Production Deployment
+
+| Service | Endpoint URL | Status |
+|---|---|---|
+| **Live Web Application** | **[https://baja-rulebot.onrender.com](https://baja-rulebot.onrender.com)** | 🟢 Active |
+| **Interactive AI Chat** | [https://baja-rulebot.onrender.com/app/chat.html](https://baja-rulebot.onrender.com/app/chat.html) | 🟢 Active |
+| **Technical Checklist** | [https://baja-rulebot.onrender.com/app/checklist.html](https://baja-rulebot.onrender.com/app/checklist.html) | 🟢 Active |
+| **Admin Compliance Panel** | [https://baja-rulebot.onrender.com/app/admin.html](https://baja-rulebot.onrender.com/app/admin.html) | 🟢 Active |
+| **Interactive Swagger API Docs** | [https://baja-rulebot.onrender.com/docs](https://baja-rulebot.onrender.com/docs) | 🟢 Active |
+| **Backend Health Check** | [https://baja-rulebot.onrender.com/health](https://baja-rulebot.onrender.com/health) | 🟢 Active |
 
 ---
 
@@ -60,18 +74,19 @@ graph TD
 
 ## 🗄️ Database Schema & Architecture
 
-The database `baja_rulebot` contains 6 relational tables designed for compliance tracking and user session management:
+The database `baja_rulebot` contains **7 relational tables** designed for compliance tracking, user session management, and regulatory security auditability:
 
 | Table | Description |
 |---|---|
 | `users` | User credentials, hashed passwords, roles (`Team Member`, `Faculty Advisor`, etc.), team name, admin status. |
 | `chat_history` | Historical queries, AI responses, user satisfaction feedback (`up`/`down`), timestamps. |
 | `rulebooks` | Metadata of uploaded rulebooks (filename, disk path, global availability flag). |
-| `rulebook_chunks` | Tokenized text chunks for keyword fallback search. |
+| `rulebook_chunks` | Tokenized 500-word text chunks with 75-word overlap for high-precision retrieval. |
 | `password_otp` | Temporary 6-digit one-time password verification tokens with 10-minute expiry. |
 | `checklists` | JSON-serialized compliance checklist states per user and category. |
+| `user_audit_logs` | Indian IT Act / CERT-In compliant access logs (Client IP, User Identity, HTTP Method, Endpoint, Status Code, Latency ms). |
 
-> SQL definition available in [`backend/schema.sql`](backend/schema.sql).
+> Complete SQL DDL definition available in [`backend/schema.sql`](backend/schema.sql). Auto-initialized with TLS connection pooling via `backend/database.py`.
 
 ---
 
