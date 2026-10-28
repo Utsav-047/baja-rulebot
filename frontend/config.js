@@ -21,7 +21,12 @@
       return LOCAL_BACKEND;
     }
 
-    // 3. Fallback to production URL when hosted remotely (e.g. Vercel, Netlify, GitHub Pages)
+    // 3. If served directly by the backend app mount (e.g. at https://my-backend/app/...)
+    if (window.location.pathname.startsWith("/app")) {
+      return window.location.origin;
+    }
+
+    // 4. Fallback to production URL when hosted remotely (e.g. Vercel, Netlify, GitHub Pages)
     return PRODUCTION_BACKEND;
   }
 

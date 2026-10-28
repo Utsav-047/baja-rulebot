@@ -18,7 +18,7 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pdfplumber import open as pdf_open
 
@@ -66,6 +66,14 @@ app.add_middleware(
 # Ensure uploads directory exists
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Resolve and mount frontend static directory (for unified single-domain deployment)
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if not os.path.exists(frontend_dir):
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "frontend"))
+
+if os.path.exists(frontend_dir):
+    app.mount("/app", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
 rulebook_text = ""
 rulebook_filename = ""
@@ -325,12 +333,16 @@ async def startup_handler():
 # ==============================================================================
 
 @app.get("/")
-def root():
+def root(request: Request):
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and os.path.exists(frontend_dir):
+        return RedirectResponse(url="/app/index.html")
     return {
         "name": "BAJA RuleBot API",
         "status": "online",
         "version": "2.0.0",
         "docs": "/docs",
+        "web_ui": "/app/index.html" if os.path.exists(frontend_dir) else None,
         "rulebook_loaded": bool(rulebook_text),
         "active_rulebook": rulebook_filename or None
     }

@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "public": true,
+  "outputDirectory": "frontend",
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ]
+}
