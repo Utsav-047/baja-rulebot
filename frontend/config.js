@@ -6,7 +6,7 @@
 (function () {
   // Default development and production backend endpoints
   const LOCAL_BACKEND = "http://127.0.0.1:8000";
-  const PRODUCTION_BACKEND = "https://baja-rulebot-production.up.railway.app";
+  const PRODUCTION_BACKEND = "https://baja-rulebot.onrender.com";
 
   function resolveBackendUrl() {
     // 1. Check if user configured a custom backend in localStorage
