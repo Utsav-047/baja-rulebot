@@ -526,6 +526,22 @@ def search_chunks_mysql(question, top_n=5):
         return []
 
 
+def get_all_chunks_text():
+    """Retrieve concatenated text of all indexed rulebook chunks directly from MySQL."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT chunk_text FROM rulebook_chunks ORDER BY chunk_index ASC")
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        if rows:
+            return "\n\n".join([r[0] for r in rows if r[0]])
+    except Exception as e:
+        print(f"[Rulebook Chunks Load Error] {e}")
+    return ""
+
+
 # ==============================================================================
 # Rulebook Metadata
 # ==============================================================================

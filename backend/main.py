@@ -44,6 +44,7 @@ from database import (
     get_user_rulebook,
     save_chunks,
     save_chunks_to_chroma,
+    get_all_chunks_text,
     save_checklist,
     get_checklist,
     delete_checklist,
@@ -315,6 +316,19 @@ async def startup_handler():
     print("🚀 Initializing BAJA RuleBot Backend...")
     init_db()
 
+    # 1. Instantly check if rulebook chunks are already persisted in the database (0ms startup)
+    try:
+        db_text = get_all_chunks_text()
+        if db_text:
+            rulebook_text = db_text
+            res = get_global_rulebook()
+            rulebook_filename = res[0] if res else "BAJA_SAEINDIA_RULEBOOK_2026.pdf"
+            print(f"✅ Auto-loaded rulebook from database: {rulebook_filename} ({len(rulebook_text.split())} words)")
+            return
+    except Exception as e:
+        print(f"Database chunks check notice: {e}")
+
+    # 2. Fallback: Check if file exists on disk
     try:
         result = get_global_rulebook()
         if result:
@@ -324,9 +338,8 @@ async def startup_handler():
                     rulebook_text = extract_text_from_pdf(f)
                 chunks = chunk_text(rulebook_text, chunk_size=500, overlap=75)
                 save_chunks(chunks)
-                save_chunks_to_chroma(chunks)
                 rulebook_filename = filename
-                print(f"✅ Auto-loaded rulebook: {filename} ({len(chunks)} chunks indexed)")
+                print(f"✅ Loaded rulebook from disk: {filename} ({len(chunks)} chunks)")
             else:
                 print(f"ℹ️ Global rulebook file path not found: {filepath}")
         else:
@@ -455,12 +468,7 @@ async def upload_rulebook(
     with open(filepath, "wb") as f:
         f.write(content)
 
-    text = ""
-    with pdf_open(io.BytesIO(content)) as pdf:
-        for page in pdf.pages:
-            extracted = page.extract_text()
-            if extracted and extracted.strip():
-                text += extracted + "\n"
+    text = extract_text_from_pdf(content)
 
     rulebook_text = text
     rulebook_filename = safe_filename
@@ -494,12 +502,7 @@ async def admin_upload_global(
     with open(filepath, "wb") as f:
         f.write(content)
 
-    text = ""
-    with pdf_open(io.BytesIO(content)) as pdf:
-        for page in pdf.pages:
-            extracted = page.extract_text()
-            if extracted and extracted.strip():
-                text += extracted + "\n"
+    text = extract_text_from_pdf(content)
 
     rulebook_text = text
     rulebook_filename = safe_filename
@@ -546,15 +549,17 @@ async def chat(request: ChatRequest):
     global rulebook_text
 
     if not rulebook_text:
-        try:
-            result = get_global_rulebook()
-            if result:
-                filename, filepath = result
-                if os.path.exists(filepath):
-                    with open(filepath, "rb") as f:
-                        rulebook_text = extract_text_from_pdf(f)
-        except Exception as e:
-            print(f"Auto-load error: {e}")
+        rulebook_text = get_all_chunks_text()
+        if not rulebook_text:
+            try:
+                result = get_global_rulebook()
+                if result:
+                    filename, filepath = result
+                    if os.path.exists(filepath):
+                        with open(filepath, "rb") as f:
+                            rulebook_text = extract_text_from_pdf(f)
+            except Exception as e:
+                print(f"Auto-load error: {e}")
 
     if not rulebook_text:
         return JSONResponse(
@@ -607,15 +612,17 @@ def checklist_generate(request: ChecklistGenerateRequest):
     global rulebook_text
 
     if not rulebook_text:
-        try:
-            result = get_global_rulebook()
-            if result:
-                filename, filepath = result
-                if os.path.exists(filepath):
-                    with open(filepath, "rb") as f:
-                        rulebook_text = extract_text_from_pdf(f)
-        except Exception as e:
-            print(f"Auto-load error: {e}")
+        rulebook_text = get_all_chunks_text()
+        if not rulebook_text:
+            try:
+                result = get_global_rulebook()
+                if result:
+                    filename, filepath = result
+                    if os.path.exists(filepath):
+                        with open(filepath, "rb") as f:
+                            rulebook_text = extract_text_from_pdf(f)
+            except Exception as e:
+                print(f"Auto-load error: {e}")
 
     if not rulebook_text:
         return JSONResponse(
