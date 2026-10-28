@@ -410,8 +410,7 @@
     })
   }
 
-  function loadGlobalRulebook()
-    loadAuditLogs() {
+  function loadGlobalRulebook() {
     // Check if already in memory
     fetch(`${BACKEND_URL}/rulebook/status`)
     .then(r => r.json())
