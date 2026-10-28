@@ -1,0 +1,65 @@
+# ==============================================================================
+# BAJA RuleBot - Multi-Container Docker Compose Specification
+# Includes persistent MySQL 8.0 database and FastAPI Compliance Assistant
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  # 1. Relational Database Service (MySQL 8.0)
+  db:
+    image: mysql:8.0
+    container_name: baja_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQLPASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQLDATABASE:-baja_rulebot}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQLPASSWORD:-rootpassword}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - baja_network
+
+  # 2. FastAPI Intelligence Engine & Compliance API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: baja_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      API_KEY: ${API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-baja_jwt_secret_2026}
+      MYSQLHOST: db
+      MYSQLPORT: 3306
+      MYSQLUSER: root
+      MYSQLPASSWORD: ${MYSQLPASSWORD:-rootpassword}
+      MYSQLDATABASE: ${MYSQLDATABASE:-baja_rulebot}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
+      EMAIL: ${EMAIL:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+      - ./backend/chroma_db:/app/backend/chroma_db
+    networks:
+      - baja_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  baja_network:
+    driver: bridge

@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+backend/.env
+backend/venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+tests/.pytest_cache
+*.log
+backend/chroma_db
+backend/uploads/*.pdf
+!backend/BAJA SAEINDIA RULBOOK 2026_Rev01_00_1762695140.pdf

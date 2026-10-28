@@ -185,6 +185,20 @@ pytest -v tests/test_api.py
 
 ---
 
+### 🐳 8. One-Command Docker Setup (`docker compose`)
+
+If you have Docker installed, you can run the entire BAJA RuleBot platform (FastAPI + MySQL 8.0) with a single command:
+
+```bash
+# Build and start all services
+docker compose up --build
+```
+
+- **Backend API**: `http://localhost:8000`
+- **Database**: Pre-configured MySQL container with health checks and persistent storage.
+
+---
+
 ## 📡 API Reference Overview
 
 | Method | Endpoint | Authorization | Description |
